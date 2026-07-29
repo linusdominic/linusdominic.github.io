@@ -322,19 +322,23 @@ function pos(e) {
   return [p.clientX - r.left, p.clientY - r.top];
 }
 
+const CLICK_SLOP = 5; // px of travel still counted as a click, not a drag
+
 cv.addEventListener("pointerdown", (e) => {
   const [mx, my] = pos(e);
   const n = hit(mx, my);
   moved = false;
   const [wx, wy] = s2w(mx, my);
-  drag = n ? { n, ox: wx - n.x, oy: wy - n.y } : { pan: true, px: mx, py: my };
+  drag = n
+    ? { n, ox: wx - n.x, oy: wy - n.y, sx: mx, sy: my }
+    : { pan: true, px: mx, py: my, sx: mx, sy: my };
   cv.classList.add("dragging");
   cv.setPointerCapture(e.pointerId);
 });
 cv.addEventListener("pointermove", (e) => {
   const [mx, my] = pos(e);
   if (drag) {
-    moved = true;
+    if (Math.hypot(mx - drag.sx, my - drag.sy) > CLICK_SLOP) moved = true;
     if (drag.pan) { view.x += mx - drag.px; view.y += my - drag.py; drag.px = mx; drag.py = my; }
     else { const [wx, wy] = s2w(mx, my); drag.n.x = wx - drag.ox; drag.n.y = wy - drag.oy; }
   } else {
