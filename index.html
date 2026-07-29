@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Linus Dominic Nathaniel — Lead Data Engineer / Data Architect</title>
+<meta name="description" content="Lead Data Engineer and Data Architect with 6+ years designing governed data platforms. Leading a team of 4–6 engineers at Altair Capital Group." />
+<meta name="author" content="Linus Dominic Nathaniel" />
+<meta name="theme-color" content="#05070a" />
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Linus Dominic Nathaniel — Lead Data Engineer / Data Architect" />
+<meta property="og:description" content="I turn fragmented operational systems into governed, queryable sources of truth." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2305070a'/><circle cx='30' cy='30' r='9' fill='%234ea3ff'/><circle cx='70' cy='50' r='9' fill='%2300e5a0'/><circle cx='30' cy='70' r='9' fill='%23c17bff'/><path d='M30 30 L70 50 L30 70' stroke='%2300e5a0' stroke-width='3.5' fill='none' opacity='.6'/></svg>" />
+</head>
+<body class="locked">
+
+<div class="grid-bg"></div>
+<div class="glow-bg"></div>
+
+<!-- ── boot ─────────────────────────────────────────────── -->
+<div id="boot">
+  <div class="boot-inner">
+    <div class="boot-line" id="bootLine"></div>
+    <div class="boot-bar"><i id="bootBar"></i></div>
+  </div>
+</div>
+
+<!-- ── nav ──────────────────────────────────────────────── -->
+<header class="nav">
+  <div class="brand"><span class="dot"></span><b>linus_dominic</b><span>/ lead_data_engineer</span></div>
+  <nav class="links">
+    <a href="#pipeline">pipeline</a>
+    <a href="#skills">stack</a>
+    <a href="#query">query</a>
+    <a href="#contact">contact</a>
+    <button class="kbd-hint" id="palBtn">⌘K</button>
+  </nav>
+</header>
+
+<!-- ── hero ─────────────────────────────────────────────── -->
+<div class="hero">
+  <div class="eyebrow">Lead Data Engineer · Data Architect</div>
+  <h1 class="name">Linus Dominic<br />Nathaniel</h1>
+  <div class="role-line"><span id="typed"></span><span class="cursor">&nbsp;</span></div>
+  <p class="tagline" id="tagline"></p>
+  <p class="summary" id="summary"></p>
+  <div class="cta-row">
+    <a class="btn primary" href="#pipeline">↓ Explore the pipeline</a>
+    <a class="btn" id="cvBtn" href="linus-nathaniel-resume.pdf" download>⤓ Download CV</a>
+    <a class="btn" href="https://www.linkedin.com/in/linus-dominic/" target="_blank" rel="noopener">LinkedIn ↗</a>
+    <a class="btn" href="https://github.com/linusdominic" target="_blank" rel="noopener">GitHub ↗</a>
+  </div>
+  <div class="stat-strip" id="stats"></div>
+  <div class="scroll-cue"><i></i>SCROLL</div>
+</div>
+
+<!-- ── DAG ──────────────────────────────────────────────── -->
+<section id="pipeline">
+  <div class="sec-head reveal">
+    <span class="tag">dag · career_graph</span>
+    <h2>The pipeline</h2>
+  </div>
+  <p class="sec-sub reveal">Every role and every system I've built, wired as a directed acyclic graph. Drag a node. Click one to read the run log. The particles are real data — they only flow along edges that actually happened.</p>
+
+  <div class="dag-wrap reveal">
+    <canvas id="dag"></canvas>
+    <div class="dag-hud" id="legend"></div>
+    <div class="dag-tools">
+      <button id="btnRelayout">⟲ relayout</button>
+      <button id="btnFlow">◉ flow</button>
+    </div>
+    <div class="dag-note">drag nodes · click to inspect</div>
+  </div>
+
+  <div class="exp-list" id="expList"></div>
+</section>
+
+<!-- ── skills ───────────────────────────────────────────── -->
+<section id="skills">
+  <div class="sec-head reveal">
+    <span class="tag">information_schema</span>
+    <h2>The stack</h2>
+  </div>
+  <p class="sec-sub reveal">What I reach for, grouped the way I actually think about it — architecture first, tools second.</p>
+  <div class="skill-grid" id="skillGrid"></div>
+</section>
+
+<!-- ── console ──────────────────────────────────────────── -->
+<section id="query">
+  <div class="sec-head reveal">
+    <span class="tag">interactive</span>
+    <h2>Query me</h2>
+  </div>
+  <p class="sec-sub reveal">A real query console over this résumé. Type <code>help</code>, or try one of the presets.</p>
+  <div class="console reveal">
+    <div class="console-bar">
+      <i class="b" style="background:#ff5f57"></i><i class="b" style="background:#febc2e"></i><i class="b" style="background:#28c840"></i>
+      <span style="margin-left:8px">linus@career:~ · duckdb-ish</span>
+    </div>
+    <div class="console-out" id="cOut"></div>
+    <div class="console-in"><span>❯</span><input id="cIn" autocomplete="off" spellcheck="false" placeholder="SELECT * FROM experience WHERE lead = true" /></div>
+  </div>
+  <div class="console-hints" id="cHints"></div>
+</section>
+
+<!-- ── contact ──────────────────────────────────────────── -->
+<section id="contact">
+  <div class="sec-head reveal">
+    <span class="tag">sink</span>
+    <h2>Get in touch</h2>
+  </div>
+  <p class="sec-sub reveal" id="statusLine"></p>
+  <div class="contact-grid" id="contactGrid"></div>
+</section>
+
+<footer>
+  <span id="footL"></span>
+  <span>built as a DAG · no trackers · <span id="footR"></span></span>
+</footer>
+
+<!-- ── drawer ───────────────────────────────────────────── -->
+<aside id="drawer" aria-hidden="true">
+  <div class="drawer-top">
+    <button class="drawer-close" id="dClose" aria-label="Close">✕</button>
+    <div class="d-kind" id="dKind"></div>
+    <div class="d-title" id="dTitle"></div>
+    <div class="d-sub" id="dSub"></div>
+    <div class="d-meta" id="dMeta"></div>
+  </div>
+  <div class="drawer-body">
+    <ul id="dBody"></ul>
+    <div class="d-tags" id="dTags"></div>
+    <div class="d-link" id="dLink"></div>
+  </div>
+</aside>
+
+<!-- ── palette ──────────────────────────────────────────── -->
+<div id="palette">
+  <div class="pal-box">
+    <input id="palInput" placeholder="Jump to a role, project or section…" autocomplete="off" />
+    <div class="pal-list" id="palList"></div>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
