@@ -10,7 +10,7 @@ static site — no framework, no build step, no trackers.
 
 - Vanilla ES modules, HTML5 Canvas (2D), CSS custom properties
 - All content lives in `data.js` — edit that file, nothing else
-- Deployed automatically to GitHub Pages via `.github/workflows/deploy.yml`
+- Deployed to GitHub Pages from `main` / root
 
 ## Features
 
@@ -32,7 +32,7 @@ python3 -m http.server 8000
 
 ## Deploy
 
-Push to `main`. First time only: **Settings → Pages → Source: GitHub Actions**.
+Push to `main`. GitHub Pages serves from `main` / root — **Settings → Pages → Source: Deploy from a branch**.
 
 ## Editing content
 

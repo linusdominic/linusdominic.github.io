@@ -14,28 +14,38 @@ const BOOT = [
   ["  ✓ load     · rendering DAG", 60],
   ["  <span class='ok'>SUCCESS</span> — pipeline live", 40],
 ];
+let booted = false;
 (async function boot() {
   const line = $("#bootLine"), bar = $("#bootBar");
   if (REDUCED) { finishBoot(); return; }
+
+  // Hard ceiling: never hold the page hostage, whatever the browser does to our timers.
+  setTimeout(finishBoot, 2600);
+  const skip = () => finishBoot();
+  $("#boot").addEventListener("click", skip);
+  window.addEventListener("keydown", skip, { once: true });
+
   let acc = "";
-  for (let i = 0; i < BOOT.length; i++) {
-    const [txt, spd] = BOOT[i];
+  for (let i = 0; i < BOOT.length && !booted; i++) {
+    const txt = BOOT[i][0];
     const plain = txt.replace(/<[^>]+>/g, "");
-    let cur = "";
-    for (const ch of plain) {
-      cur += ch;
-      line.innerHTML = acc + cur.replace(/SUCCESS/, "<span class='ok'>SUCCESS</span>");
-      await sleep(spd / 6);
+    // type in chunks — one timer per chunk, not per character
+    for (let c = 3; c <= plain.length && !booted; c += 3) {
+      line.innerHTML = acc + plain.slice(0, c);
+      await sleep(12);
     }
     acc += txt + "\n";
     line.innerHTML = acc;
     bar.style.width = ((i + 1) / BOOT.length) * 100 + "%";
-    await sleep(70);
+    await sleep(40);
   }
-  await sleep(260);
   finishBoot();
 })();
+
 function finishBoot() {
+  if (booted) return;
+  booted = true;
+  $("#bootBar").style.width = "100%";
   $("#boot").classList.add("done");
   document.body.classList.remove("locked");
   startHero();

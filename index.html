@@ -149,5 +149,16 @@
 </div>
 
 <script type="module" src="app.js"></script>
+<script>
+  // Failsafe: if the module never loads (network hiccup, old browser), don't trap the visitor
+  // behind the boot overlay.
+  setTimeout(function () {
+    var b = document.getElementById("boot");
+    if (b && !b.classList.contains("done")) {
+      b.classList.add("done");
+      document.body.classList.remove("locked");
+    }
+  }, 5000);
+</script>
 </body>
 </html>
