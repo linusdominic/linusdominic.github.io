@@ -218,9 +218,9 @@ h1.name {
 /* hero visual */
 .hero-visual { position: relative; height: min(60vh, 520px); min-height: 300px; }
 #ambient { display: block; width: 100%; height: 100%; }
-.hero-visual::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(closest-side, transparent 52%, var(--bg) 96%);
+#ambient {
+  -webkit-mask-image: radial-gradient(closest-side, #000 58%, transparent 99%);
+  mask-image: radial-gradient(closest-side, #000 58%, transparent 99%);
 }
 .hv-cap {
   position: absolute; bottom: 4px; left: 0; font-family: var(--mono);
