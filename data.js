@@ -1,5 +1,6 @@
 // ─────────────────────────────────────────────────────────────
-//  PIPELINE MANIFEST — the DAG that renders this site
+//  PIPELINE MANIFEST · the DAG that renders this site
+//  House style: no em-dashes, no bold inside body copy.
 // ─────────────────────────────────────────────────────────────
 
 export const PROFILE = {
@@ -10,20 +11,20 @@ export const PROFILE = {
   linkedin: "https://www.linkedin.com/in/linus-dominic/",
   github: "https://github.com/linusdominic",
   location: "Karachi, Pakistan",
-  status: "Open to EU relocation (visa sponsorship required) · also EU-remote",
+  status: "Open to EU relocation (visa sponsorship required) and to EU-remote roles",
   tagline:
-    "I turn fragmented operational systems into governed, queryable sources of truth.",
+    "I get systems that each think they own the customer to agree on one version of them.",
   summary:
-    "Lead Data Engineer and Data Architect with 6+ years designing data platforms end-to-end — from source-system contracts and domain modeling through ingestion, transformation, BI and stakeholder enablement. Currently leading a team of 4–6 engineers at Altair Capital Group, where I own the data architecture for a US real-estate finance firm.",
+    "Data engineer and architect with 6+ years building platforms on top of messy operational systems. I lead a team of 4 to 6 engineers at Altair Capital Group, where I own the data architecture, the AWS footprint the whole platform runs on, and every third-party integration we depend on.",
   stats: [
     { k: "years_experience", v: 6, suffix: "+" },
     { k: "entities_modeled", v: 2, suffix: "M" },
     { k: "engineers_led", v: 6, suffix: "" },
-    { k: "pipelines_owned", v: 29, suffix: "+" },
+    { k: "vendor_integrations", v: 8, suffix: "+" },
   ],
 };
 
-// type: source | transform | warehouse | serve | ai | lead
+// type: source | transform | warehouse | serve | ai | lead | platform | infra | vendor
 export const NODES = [
   {
     id: "bleed",
@@ -36,9 +37,9 @@ export const NODES = [
     kind: "role",
     tags: ["Computer Vision", "Python", "Data Analysis"],
     body: [
-      "Led data analysis for computer-vision projects, refining models for higher image-recognition accuracy.",
-      "Optimized data pipelines, improving processing speed while holding data integrity.",
-      "First taste of owning a delivery surface end-to-end — and of leading other engineers through it.",
+      "Ran the data-analysis side of the computer-vision projects and fed findings back into model tuning for better image recognition.",
+      "Cleaned up the data pipelines for speed without giving up integrity.",
+      "First role where I led other engineers rather than just shipping my own work.",
     ],
   },
   {
@@ -53,13 +54,14 @@ export const NODES = [
     badge: "MARKETPLACE",
     tags: ["Marketplace", "Elasticsearch", "IoT", "Product"],
     body: [
-      "Engineered the Custom Data Insights platform for the <b>Connection Cloud Marketplace</b> — a multi-vendor cloud-services marketplace — delivering interactive spend and comparative-analysis visualisations for buyers and vendors.",
-      "Built an Elasticsearch + Kibana querying app for the sales team, improving retrieval speed ~50%.",
-      "Shipped a Smart Mirror IoT product for facial-recognition attendance, cutting manual tracking error.",
+      "Built the Custom Data Insights platform for Connection Cloud Marketplace, a multi-vendor cloud-services marketplace. It ingested vendor and buyer transaction data and gave both sides spend analytics and side-by-side comparison of offerings.",
+      "Built an Elasticsearch and Kibana app for the sales team. Retrieval got roughly 50% faster.",
+      "Shipped a Smart Mirror IoT product doing facial-recognition attendance, which took the manual error out of tracking.",
     ],
   },
   {
     id: "pureharvest",
+    short: "Pure Harvest",
     label: "Pure Harvest",
     sub: "Data Engineer",
     type: "transform",
@@ -70,14 +72,15 @@ export const NODES = [
     badge: "PRODUCT CO.",
     tags: ["PySpark", "AWS Glue", "Medallion", "Redshift"],
     body: [
-      "Product-based agri-tech company. Designed and deployed custom ETL on PySpark and AWS Glue, cutting processing time ~30%.",
-      "Automated multi-source ingestion into a centralised AWS data lake, widening the analytics surface for operations and growers.",
-      "Implemented Medallion architecture (bronze / silver / gold) on a Redshift lakehouse — modeling, governance, performance tuning.",
-      "Built interactive operational dashboards in Apache Superset across cultivation and supply chain.",
+      "Product-based agri-tech company. Wrote the ETL behind their own platform in PySpark on AWS Glue. Processing time came down around 30%.",
+      "Automated ingestion from several sources into one AWS data lake, which widened what operations and the growers could actually analyze.",
+      "Built out a Medallion lakehouse (bronze, silver, gold) on Redshift: modeling, governance and a fair amount of performance tuning.",
+      "Built the Superset dashboards used across cultivation and supply chain.",
     ],
   },
   {
     id: "venturedive",
+    short: "VentureDive",
     label: "VentureDive",
     sub: "Senior Data Engineer",
     type: "transform",
@@ -87,14 +90,15 @@ export const NODES = [
     kind: "role",
     tags: ["Airflow", "dbt", "Terraform", "Multi-cloud"],
     body: [
-      "Led migration of the team's ETL platform from Talend to Apache Airflow — new standards for scheduling, observability and Git-based DAG versioning; cut average runtime and on-call paging through parallelism redesign and SLA monitoring.",
-      "Established the modern data stack reference architecture (Airflow + dbt + warehouse) as the team-wide standard.",
-      "Defined the multi-cloud deployment standard (Terraform + GitHub Actions) across AWS, GCP and Azure engagements.",
-      "Mentored junior engineers; codified Airflow patterns, review and DAG-testing practice as team norms.",
+      "Ran the migration of the team's ETL platform off Talend and onto Airflow, with the standards that came with it: scheduling conventions, observability, DAGs versioned in Git. Redesigning for parallelism brought average runtime down and, more usefully, cut the paging.",
+      "Made Airflow plus dbt plus warehouse the team's reference architecture, with models, tests, sources and lineage adopted across downstream transformations.",
+      "Wrote the multi-cloud deployment standard on Terraform and GitHub Actions, used across AWS, GCP and Azure engagements.",
+      "Mentored the junior engineers and turned our Airflow patterns and DAG-testing into written team practice.",
     ],
   },
   {
     id: "altair",
+    short: "Altair",
     label: "Altair Capital Group",
     sub: "Lead Data Engineer / Data Architect",
     type: "lead",
@@ -104,47 +108,108 @@ export const NODES = [
     kind: "role",
     badge: "LEADING 4–6",
     current: true,
-    tags: ["Leadership", "Architecture", "AWS", "Superset", "LLM"],
+    tags: ["Leadership", "Architecture", "AWS", "Platform", "Integrations"],
     body: [
-      "<b>Lead a team of 4–6 engineers</b> across data platform, BI and integrations — sprint planning, architecture review, code review, hiring input and direct mentorship. I set the technical standards the team builds against.",
-      "Designed the firm's unified customer-journey domain model, reconciling three external source systems (parquet data lake, dialer logs, CRM) into a phone-keyed six-stage funnel across <b>~2M entities</b> — now the single source of truth for BI and operations.",
-      "Re-architected the production data lake on AWS S3: canonical zoning, partitioning and cataloguing across <b>~29 ingestion and transformation jobs</b>; eliminated long-standing duplication.",
-      "Delivered the cross-system reconciliation framework between the loan-origination platform and the warehouse, surfacing data-quality gaps invisible to operations.",
-      "Owned an internal loan-pricing platform end-to-end — requirements, modeling, calculation engine, CRM integration, term-sheet generation — for Bridge and DSCR products.",
+      "I lead a team of 4 to 6 engineers across data platform, BI, application and integrations. I run architecture and code review, plan the sprints, and own the standards the team builds to.",
+      "Three things sit with me: the data architecture, the AWS footprint the whole platform runs on, and every third-party integration the business depends on. Follow the edges out of this node for each of them.",
+      "I also sit between the lending and operations stakeholders and the engineers, gathering requirements and negotiating what each system promises to deliver.",
+      "Involved in hiring and technical screening, and in mentoring engineers into owning their own domains.",
+    ],
+  },
+
+  // ── layer 3: what I own ───────────────────────────────────
+  {
+    id: "portal",
+    short: "Portal",
+    label: "Borrower Portal",
+    sub: "Full-stack loan platform",
+    type: "platform",
+    layer: 3,
+    kind: "project",
+    period: "Altair Capital Group",
+    link: "https://github.com/linusdominic",
+    linkLabel: "Private repo (available on request) →",
+    tags: ["Node.js", "PostgreSQL", "React 19", "TypeScript", "WebSockets"],
+    body: [
+      "The borrower portal and internal loan platform, built from scratch and still run by my team. Node and PostgreSQL on the back, with a React 19 and TypeScript front end migrated in as a strangler around the original client rather than as a rewrite.",
+      "It covers borrower onboarding, loans, document and task workflows, e-signature with generated PDFs, underwriting and processing pipelines, role-based permissions with field-level masking, audit logging, and realtime sync over WebSockets.",
+      "Record writes go through exactly one seam that handles validation, per-field permissions, stage rules, formula recompute, audit and webhooks. Every shortcut around it is a bug.",
+      "PostgreSQL is the system of record. Getting there meant moving the platform off a JSON file store across roughly 29 numbered migrations without downtime.",
     ],
   },
   {
     id: "journey",
+    short: "Journey Model",
     label: "Customer Journey Model",
-    sub: "Unified domain model · ~2M entities",
+    sub: "Unified domain model · ~2M records",
     type: "warehouse",
     layer: 3,
     kind: "project",
     period: "Altair Capital Group",
     tags: ["Kimball", "Conformed Dims", "Data Contracts"],
     body: [
-      "The firm's single source of truth for the customer lifecycle. Three external systems — a parquet data lake, dialer logs and the CRM — modeled onto a phone-keyed, six-stage funnel spanning roughly two million entities.",
-      "Defined the conformed dimensions and bridge contracts that every downstream dashboard and operational process now reads from.",
-      "The hard part was not the volume. It was reconciling three systems that each believed they owned the customer.",
+      "The company's single source of truth for the customer lifecycle. A parquet data lake, dialer logs and the CRM reconciled onto one phone-keyed six-stage funnel across roughly 2M records.",
+      "I defined the conformed dimensions and bridge contracts that every downstream dashboard and operational process now reads from.",
+      "The hard part was never the volume. It was three systems that each believed they owned the customer.",
     ],
   },
   {
     id: "aitm",
+    short: "AI Intel",
     label: "AI Conversation Intelligence",
-    sub: "LLM layer behind AI-TM agent",
+    sub: "LLM layer behind the AI-TM agent",
     type: "ai",
     layer: 3,
     kind: "project",
     period: "Altair Capital Group",
     tags: ["LLM", "AWS Lambda", "Prompt Engineering", "Event-driven"],
     body: [
-      "Architected the conversation-analysis system powering the firm's AI Telemarketing agent: an LLM-driven Meaningful Conversation detector plus a role-aware call-note generator that writes structured insight back into CRM Leads and Contacts.",
-      "Notes are generated differently for a Loan Officer, a Processor and the CCO — same call, three audiences, three summaries.",
-      "Built event-driven on AWS Lambda with retry logic, race-condition handling and CloudWatch anomaly alerting on SNS.",
+      "The conversation-analysis system behind the company's AI telemarketing agent: an LLM detector for meaningful conversations, plus a call-note generator that writes structured insight back into CRM Leads and Contacts.",
+      "Notes come out differently for a Loan Officer, a Processor and the CCO. Same call, three audiences, three summaries.",
+      "Event-driven on AWS Lambda with retry logic, race-condition handling and CloudWatch anomaly alerting over SNS.",
+    ],
+  },
+
+  // ── layer 4: how it runs and what it talks to ─────────────
+  {
+    id: "infra",
+    short: "AWS Infra",
+    label: "AWS Infrastructure",
+    sub: "The footprint it all runs on",
+    type: "infra",
+    layer: 4,
+    kind: "project",
+    period: "Altair Capital Group",
+    tags: ["EC2", "RDS", "Lambda", "S3", "CloudFront", "IAM"],
+    body: [
+      "I own the whole AWS footprint: EC2 behind nginx, RDS PostgreSQL, S3 for documents and the data lake, CloudFront, Lambda and API Gateway for vendor callbacks, Secrets Manager and SSM for credentials, CloudWatch and SNS for alerting, and the IAM roles and policies behind all of it.",
+      "I also wrote the deploy tooling: guarded publish-to-EC2 scripts, boot migrations, separate readiness and liveness endpoints, drain-aware restarts and restore from S3.",
+      "The performance work runs off measured evidence rather than guesswork: nginx timing logs, pg_stat_statements, RDS Performance Insights, event-loop lag histograms and per-endpoint p50/p95 telemetry.",
+      "Best result so far: the main hydration payload went from 7.75MB to 124KB by replacing one global version counter with per-domain version vectors and partial state. Separately, the right expression index took an audit query on 267k rows from a parallel sequential scan to a 0.06ms index scan.",
+      "Global search runs on PostgreSQL itself (pg_trgm, tsvector, phone-digit matching) instead of a bolted-on search engine, with encrypted and SSN-typed fields kept out of the index and permissions re-checked against live data on every hit.",
+    ],
+  },
+  {
+    id: "vendors",
+    short: "Vendors",
+    label: "Vendor Integrations",
+    sub: "Zoho, voice, bookings, Cotality",
+    type: "vendor",
+    layer: 4,
+    kind: "project",
+    period: "Altair Capital Group",
+    tags: ["Cotality", "ValueLink", "Zoho", "Twilio", "Telnyx", "Square"],
+    body: [
+      "Zoho first: CRM deal-to-loan field and picklist mapping into the portal, plus OAuth-based transactional mail. Then voice and telephony on Twilio and Telnyx (dialer, recordings, browser softphone), and Square for bookings and payments.",
+      "Then the full Cotality (formerly CoreLogic) suite: Instant Merge credit reports, SSA-89 SSN verification, LoanSafe fraud checks, and ValueLink appraisal ordering with 1004, 1025 and 1014 form field mappings against UAD 3.6.",
+      "The SSA-89 production callback edge is its own Lambda behind API Gateway. It validates the vendor token and source CIDR, archives every payload to S3 with server-side encryption, relays to the portal over short-lived HMAC headers, and lets the portal do an idempotent order update before returning the vendor ACK. UAT and production stayed separate, and auto-submit stayed off until vendor certification passed.",
+      "The house rule I set for vendor failures: a visible failure beats a silent one. Irreversible paid actions like appraisal orders and card payments are never auto-retried. They land in an ambiguous state a human has to reconcile, because a double charge costs more than two minutes of someone's attention.",
+      "There is also a scoped public API: per-module keys with action-level scopes, IP allowlists, rate limits, rotation with grace windows and separate gating for PII reads.",
     ],
   },
   {
     id: "superset",
+    short: "BI Platform",
     label: "Programmatic BI Platform",
     sub: "Apache Superset · BI as code",
     type: "serve",
@@ -155,24 +220,25 @@ export const NODES = [
     linkLabel: "View live dashboard →",
     tags: ["Superset", "Jinja", "MySQL", "CI/CD"],
     body: [
-      "Established the firm's BI delivery model: a version-controlled, code-deployed analytics layer built from Python, Jinja-templated MySQL views and the Superset API.",
-      "Powers the Performance Score Ratings (PSR), Loan Officer pipeline and Daily Call dashboards used by sales, operations and leadership.",
-      "Replaced ad-hoc dashboard clicking with reproducible, reviewable, auditable BI — dashboards ship through pull requests like everything else.",
+      "BI moved onto Apache Superset and became deployable from code: Python, Jinja-templated MySQL views and the Superset API.",
+      "It powers the Performance Score Ratings, Loan Officer pipeline and Daily Call dashboards that sales, operations and leadership use every day.",
+      "Dashboards now ship through pull requests like everything else, which replaced a lot of ad-hoc clicking with something reviewable.",
     ],
   },
   {
     id: "voice",
-    label: "Voice + CRM Integration",
-    sub: "Event-driven ingestion",
+    short: "Reconciliation",
+    label: "Reconciliation Framework",
+    sub: "Warehouse vs origination platform",
     type: "serve",
     layer: 4,
     kind: "project",
     period: "Altair Capital Group",
-    tags: ["Lambda", "SSM", "OAuth", "SNS"],
+    tags: ["Data Quality", "Auditability", "Reconciliation"],
     body: [
-      "Designed the voice and CRM integration pipeline on event-driven AWS Lambda with an S3 pending-queue pattern and shared SSM-cached OAuth tokens.",
-      "Eliminated rate-limit failures at concurrent scale — the previous design burned tokens faster than the provider would mint them.",
-      "Wired into CloudWatch anomaly alerting on SNS so failures page a human, not a dashboard nobody reads.",
+      "The framework that compares the loan-origination platform against the warehouse so operations can see exactly where the two disagree.",
+      "Diffs are auditable across millions of records. Before this the gaps were simply invisible to the people whose job depended on them.",
+      "This is the piece I would point at first if you asked what a data architect actually does day to day.",
     ],
   },
 ];
@@ -183,12 +249,15 @@ export const EDGES = [
   ["arpatech", "venturedive"],
   ["pureharvest", "altair"],
   ["venturedive", "altair"],
+  ["altair", "portal"],
   ["altair", "journey"],
   ["altair", "aitm"],
+  ["portal", "infra"],
+  ["portal", "vendors"],
   ["journey", "superset"],
-  ["aitm", "voice"],
   ["journey", "voice"],
   ["aitm", "superset"],
+  ["aitm", "vendors"],
 ];
 
 export const SKILLS = [
@@ -218,19 +287,34 @@ export const SKILLS = [
     items: ["Amazon Redshift", "Google BigQuery", "Snowflake", "AWS Athena", "Databricks"],
   },
   {
-    group: "AI & LLM",
-    icon: "◉",
-    items: ["Conversation intelligence", "LLM note generation", "Prompt engineering", "Role-aware agent design"],
+    group: "AWS",
+    icon: "☁",
+    items: ["EC2", "S3", "RDS", "Lambda", "API Gateway", "Glue", "Athena", "Redshift", "Step Functions", "EventBridge", "CloudFront", "CloudWatch", "SNS", "Secrets Manager", "SSM", "IAM", "ECS", "Fargate"],
   },
   {
-    group: "Cloud",
-    icon: "☁",
-    items: ["AWS (S3, Glue, Athena, Redshift, Lambda, Step Functions, EventBridge, ECS, Fargate)", "GCP (BigQuery, Dataflow, GCS)", "Azure (Data Factory, Synapse)"],
+    group: "PostgreSQL Depth",
+    icon: "◫",
+    items: ["Migrations", "Query plans", "Expression indexes", "pg_trgm / tsvector search", "pg_stat_statements", "Performance Insights"],
+  },
+  {
+    group: "Application",
+    icon: "◧",
+    items: ["Node.js", "React 19", "TypeScript", "REST API design", "WebSockets", "OAuth", "HMAC-signed webhooks", "PDF generation"],
+  },
+  {
+    group: "Vendor Integrations",
+    icon: "⇄",
+    items: ["Cotality / CoreLogic", "Instant Merge", "SSA-89", "LoanSafe", "ValueLink", "Zoho CRM & Mail", "Twilio", "Telnyx", "Square", "MISMO"],
   },
   {
     group: "Platform & DevOps",
     icon: "⬢",
-    items: ["Terraform", "Docker", "GitHub Actions", "CI/CD", "MySQL", "PostgreSQL", "MongoDB", "Elasticsearch"],
+    items: ["Terraform", "Docker", "nginx", "GitHub Actions", "CI/CD", "MySQL", "MongoDB", "Elasticsearch"],
+  },
+  {
+    group: "AI & LLM",
+    icon: "◉",
+    items: ["Conversation intelligence", "LLM note generation", "Prompt engineering", "Role-aware agent design"],
   },
   {
     group: "BI & Visualization",
@@ -244,18 +328,21 @@ export const EDUCATION = {
   school: "Karachi Institute of Economics and Technology",
   period: "Aug 2018 – Aug 2022",
   certs: [
-    "Certified Data Engineer — Karachi AI",
-    "Certified Data Analyst — Karachi AI",
-    "Computer Vision & Image Processing — Bleed AI",
+    "Certified Data Engineer, Karachi AI",
+    "Certified Data Analyst, Karachi AI",
+    "Computer Vision and Image Processing, Bleed AI",
   ],
-  languages: ["English — Fluent", "Urdu — Native"],
+  languages: ["English, fluent", "Urdu, native"],
 };
 
 export const TYPE_META = {
   source:    { color: "#4ea3ff", name: "SOURCE" },
   transform: { color: "#00e5a0", name: "TRANSFORM" },
   lead:      { color: "#ffb020", name: "LEAD" },
+  platform:  { color: "#7c9cff", name: "PLATFORM" },
   warehouse: { color: "#c17bff", name: "WAREHOUSE" },
   ai:        { color: "#ff5f9e", name: "AI / ML" },
+  infra:     { color: "#ff9d5c", name: "INFRA" },
+  vendor:    { color: "#f2d75e", name: "VENDORS" },
   serve:     { color: "#5eead4", name: "SERVE" },
 };

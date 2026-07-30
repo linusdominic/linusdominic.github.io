@@ -9,10 +9,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const BOOT = [
   ["$ airflow dags trigger portfolio_build", 90],
   ["  [scheduler] queued run_id=manual__2026", 60],
-  ["  ✓ extract  · 5 roles, 4 projects", 60],
+  ["  ✓ extract  · 5 roles, 6 projects", 60],
   ["  ✓ transform · resolving edges …", 70],
   ["  ✓ load     · rendering DAG", 60],
-  ["  <span class='ok'>SUCCESS</span> — pipeline live", 40],
+  ["  <span class='ok'>SUCCESS</span> · pipeline live", 40],
 ];
 let booted = false;
 (async function boot() {
@@ -29,7 +29,7 @@ let booted = false;
   for (let i = 0; i < BOOT.length && !booted; i++) {
     const txt = BOOT[i][0];
     const plain = txt.replace(/<[^>]+>/g, "");
-    // type in chunks — one timer per chunk, not per character
+    // type in chunks, one timer per chunk rather than one per character
     for (let c = 3; c <= plain.length && !booted; c += 3) {
       line.innerHTML = acc + plain.slice(0, c);
       await sleep(12);
@@ -55,8 +55,9 @@ function finishBoot() {
 const ROLES = [
   "Lead Data Engineer",
   "Data Architect",
-  "Team Lead — 4–6 engineers",
+  "Team Lead, 4–6 engineers",
   "Lakehouse & Medallion design",
+  "AWS platform ownership",
   "BI as code",
 ];
 function startHero() {
@@ -109,8 +110,8 @@ const particles = [];
 
 function setMode() {
   VERT = cv.clientWidth < 720;
-  if (VERT) { NW = 132; NH = 46; LAYER_STEP = 118; SLOT_STEP = 152; }
-  else { NW = 168; NH = 52; LAYER_STEP = 250; SLOT_STEP = 190; }
+  if (VERT) { NW = 138; NH = 44; LAYER_STEP = 108; SLOT_STEP = 150; }
+  else { NW = 168; NH = 52; LAYER_STEP = 248; SLOT_STEP = 150; }
 }
 function layout() {
   setMode();
@@ -286,7 +287,8 @@ function draw() {
     ctx.fillStyle = active ? "#fff" : "#dbe6f0";
     ctx.font = `600 ${fs}px "Inter", sans-serif`;
     ctx.textBaseline = "middle";
-    ctx.fillText(clip(n.label, w - 22 * view.s, `600 ${fs}px Inter`), x + 12 * view.s, sy - 7 * view.s);
+    const lbl = (VERT && n.short) ? n.short : n.label;
+    ctx.fillText(clip(lbl, w - 22 * view.s, `600 ${fs}px Inter`), x + 12 * view.s, sy - 7 * view.s);
 
     ctx.fillStyle = "#6f8296";
     const fs2 = Math.max(8, 9.5 * view.s);
@@ -443,11 +445,13 @@ const CMDS = {
   <span class="v">whoami</span>            the short version
   <span class="v">marketplace</span>       marketplace platform experience
   <span class="v">lead</span>              team leadership detail
+  <span class="v">infra</span>             AWS and platform ownership
+  <span class="v">integrations</span>      third-party vendor integrations
   <span class="v">contact</span>           how to reach me
   <span class="v">clear</span>             wipe the console`),
 
   tables: () => w(table(
-    [["experience", roles.length], ["projects", projs.length], ["skills", SKILLS.length], ["leadership", 1], ["education", 1]],
+    [["experience", roles.length], ["projects", projs.length], ["skills", SKILLS.length], ["leadership", 1], ["infra", 1], ["integrations", 1], ["education", 1]],
     ["table_name", "rows"])),
 
   whoami: () => w(`<span class="k">${PROFILE.name}</span>
@@ -456,20 +460,20 @@ ${PROFILE.tagline}
 <span class="v">${PROFILE.status}</span>`),
 
   marketplace: () => w(`<span class="k">marketplace_experience</span>
-<span class="v">Connection Cloud Marketplace</span> — Arpatech (Pvt) Ltd, 2022–2023
+<span class="v">Connection Cloud Marketplace</span> · Arpatech (Pvt) Ltd, 2022-2023
   A multi-vendor cloud-services marketplace. I engineered the Custom Data
   Insights platform on top of it: ingestion of vendor + buyer transaction
   data, spend analytics, and comparative analysis visualisations used by
   both sides of the marketplace to price and compare offerings.
 
 <span class="k">adjacent / transferable</span>
-  Altair Capital Group — two-sided funnel modeling across ~2M entities,
+  Altair Capital Group: two-sided funnel modeling across ~2M entities,
   high-volume listing-style inventory, event-level dialer + CRM streams.
   The shape of the problem is the same as a vehicle marketplace: many
   supply-side listings, many demand-side events, one journey to reconcile.`),
 
   lead: () => w(`<span class="k">leadership</span>
-<span class="v">Altair Capital Group</span> — Lead Data Engineer / Data Architect
+<span class="v">Altair Capital Group</span> · Lead Data Engineer / Data Architect
   team_size        : 4–6 engineers
   scope            : data platform, BI, integrations
   responsibilities : architecture ownership, sprint planning, code review,
@@ -478,12 +482,54 @@ ${PROFILE.tagline}
                      re-architected S3 data lake (~29 jobs),
                      programmatic Superset BI platform
 
-<span class="v">VentureDive</span> — Senior Data Engineer
-  led Talend → Airflow platform migration; mentored juniors;
+<span class="v">VentureDive</span> · Senior Data Engineer
+  ran the Talend to Airflow platform migration; mentored juniors;
   codified team-wide Airflow / dbt / Terraform standards.
 
-<span class="v">Bleed AI</span> — Lead Support Engineer & Data Analyst
-  led data analysis for computer-vision delivery.`),
+<span class="v">Bleed AI</span> · Lead Support Engineer and Data Analyst
+  ran data analysis for computer-vision delivery.`),
+
+  infra: () => w(`<span class="k">aws_and_platform</span>
+<span class="v">I own the whole AWS footprint at Altair.</span>
+  compute      : EC2 behind nginx, Lambda, ECS / Fargate
+  data         : RDS PostgreSQL, S3 (documents + data lake), Athena, Redshift
+  edge         : CloudFront, API Gateway
+  ops          : CloudWatch, SNS, Secrets Manager, SSM, IAM
+  deploy       : guarded publish-to-EC2, boot migrations, readiness vs
+                 liveness endpoints, drain-aware restarts, restore from S3
+
+<span class="k">measured_results</span>
+  hydration payload   7.75MB  ->  124KB   (per-domain version vectors)
+  audit query (267k)  seq scan ->  0.06ms  (the right expression index)
+  search              PostgreSQL pg_trgm + tsvector, no extra engine
+
+Also built and run the borrower portal itself: Node + PostgreSQL with a
+React 19 / TypeScript front end migrated in as a strangler, covering
+onboarding, loans, documents, e-sign, underwriting and realtime sync.`),
+
+  integrations: () => w(`<span class="k">vendor_integrations</span>
+<span class="v">first wave</span>
+  Zoho CRM     deal-to-loan field + picklist mapping into the portal
+  Zoho Mail    OAuth transactional mail
+  Twilio       voice, recordings, browser softphone
+  Telnyx       dialer origination
+  Square       bookings and payments
+
+<span class="v">then the Cotality (ex-CoreLogic) suite</span>
+  Instant Merge   credit reports
+  SSA-89          SSN verification
+  LoanSafe        fraud checks
+  ValueLink       appraisal ordering, 1004 / 1025 / 1014, UAD 3.6
+
+<span class="v">the SSA-89 callback edge</span>
+  Its own Lambda behind API Gateway: validates the vendor token and source
+  CIDR, archives each payload to S3 with server-side encryption, relays to
+  the portal over short-lived HMAC headers, and lets the portal do an
+  idempotent order update before returning the vendor ACK.
+
+<span class="v">house rule</span>
+  A visible failure beats a silent one. Irreversible paid actions are never
+  auto-retried; they land in an ambiguous state a human must reconcile.`),
 
   contact: () => w(`<span class="k">sinks</span>
   email    <span class="v">${PROFILE.email}</span>
@@ -516,17 +562,19 @@ function run(raw) {
     return w(res);
   }
   if (/marketplace/.test(low)) return CMDS.marketplace();
+  if (/\baws|infra|cloud|postgres|platform|portal/.test(low)) return CMDS.infra();
+  if (/integration|cotality|corelogic|valuelink|zoho|twilio|telnyx|square|vendor/.test(low)) return CMDS.integrations();
   if (/\blead|team|manage/.test(low)) return CMDS.lead();
   if (low === "ls" || low === "dir") return CMDS.tables();
-  w(`<span class="e">error: unknown command "${escapeHtml(cmd)}" — try <b>help</b></span>`);
+  w(`<span class="e">error: unknown command "${escapeHtml(cmd)}". try <b>help</b></span>`);
 }
 const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { run(inp.value); inp.value = ""; } });
-$("#cHints").innerHTML = ["help", "whoami", "select * from experience", "marketplace", "lead", "select * from projects", "clear"]
+$("#cHints").innerHTML = ["help", "whoami", "select * from experience", "infra", "integrations", "marketplace", "lead", "clear"]
   .map((h) => `<button data-c="${h}">${h}</button>`).join("");
 $$("#cHints button").forEach((b) => (b.onclick = () => { run(b.dataset.c); inp.focus(); }));
-w(`<span class="k">career.db</span> connected — 5 roles, 4 projects, ${SKILLS.length} skill groups indexed.
+w(`<span class="k">career.db</span> connected · 5 roles, ${projs.length} projects, ${SKILLS.length} skill groups indexed.
 type <span class="v">help</span> to begin.`);
 
 /* ══════════════════ PALETTE ══════════════════ */
