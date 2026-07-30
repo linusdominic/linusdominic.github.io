@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2305070a'/><circle cx='30' cy='30' r='9' fill='%234ea3ff'/><circle cx='70' cy='50' r='9' fill='%2300e5a0'/><circle cx='30' cy='70' r='9' fill='%23c17bff'/><path d='M30 30 L70 50 L30 70' stroke='%2300e5a0' stroke-width='3.5' fill='none' opacity='.6'/></svg>" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2305070a'/><path d='M30 30 L70 50 L30 70' stroke='%2300e5a0' stroke-width='4' fill='none' opacity='.55'/><circle cx='30' cy='30' r='9' fill='%233987e5'/><circle cx='30' cy='70' r='9' fill='%23199e70'/><circle cx='70' cy='50' r='9' fill='%2300e5a0'/></svg>" />
 </head>
 <body class="locked">
 
@@ -45,23 +45,30 @@
 
 <!-- ── hero ─────────────────────────────────────────────── -->
 <div class="hero">
-  <div class="eyebrow">Lead Data Engineer · Data Architect</div>
-  <h1 class="name">Linus Dominic<br />Nathaniel</h1>
-  <div class="role-line"><span id="typed"></span><span class="cursor">&nbsp;</span></div>
-  <p class="tagline" id="tagline"></p>
-  <p class="summary" id="summary"></p>
-  <div class="cta-row">
-    <a class="btn primary" href="#pipeline">↓ Explore the pipeline</a>
-    <a class="btn" id="cvBtn" href="linus-nathaniel-resume.pdf" download>⤓ Download CV</a>
-    <a class="btn" href="https://www.linkedin.com/in/linus-dominic/" target="_blank" rel="noopener">LinkedIn ↗</a>
-    <a class="btn" href="https://github.com/linusdominic" target="_blank" rel="noopener">GitHub ↗</a>
+ <div class="wrap hero-grid">
+  <div class="hero-copy">
+    <div class="eyebrow">Lead Data Engineer · Data Architect</div>
+    <h1 class="name">Linus Dominic<br />Nathaniel</h1>
+    <div class="role-line"><span id="typed"></span><span class="cursor">&nbsp;</span></div>
+    <p class="tagline" id="tagline"></p>
+    <p class="summary" id="summary"></p>
+    <div class="cta-row">
+      <a class="btn primary" href="#pipeline">↓ Explore the pipeline</a>
+      <a class="btn" id="cvBtn" href="linus-nathaniel-resume.pdf" download>⤓ Download CV</a>
+      <a class="btn" href="https://www.linkedin.com/in/linus-dominic/" target="_blank" rel="noopener">LinkedIn ↗</a>
+      <a class="btn" href="https://github.com/linusdominic" target="_blank" rel="noopener">GitHub ↗</a>
+    </div>
+    <div class="stat-strip" id="stats"></div>
   </div>
-  <div class="stat-strip" id="stats"></div>
-  <div class="scroll-cue"><i></i>SCROLL</div>
+  <div class="hero-visual">
+    <canvas id="ambient" aria-hidden="true"></canvas>
+    <span class="hv-cap">live pipeline · idle</span>
+  </div>
+ </div>
 </div>
 
 <!-- ── DAG ──────────────────────────────────────────────── -->
-<section id="pipeline">
+<section id="pipeline"><div class="wrap">
   <div class="sec-head reveal">
     <span class="tag">dag · career_graph</span>
     <h2>The pipeline</h2>
@@ -78,21 +85,21 @@
     <div class="dag-note">drag nodes · click to inspect</div>
   </div>
 
-  <div class="exp-list" id="expList"></div>
-</section>
+  <div class="timeline" id="expList"></div>
+</div></section>
 
 <!-- ── skills ───────────────────────────────────────────── -->
-<section id="skills">
+<section id="skills"><div class="wrap">
   <div class="sec-head reveal">
     <span class="tag">information_schema</span>
     <h2>The stack</h2>
   </div>
   <p class="sec-sub reveal">What I reach for, grouped the way I actually think about it: architecture first, tools second.</p>
   <div class="skill-grid" id="skillGrid"></div>
-</section>
+</div></section>
 
 <!-- ── console ──────────────────────────────────────────── -->
-<section id="query">
+<section id="query"><div class="wrap">
   <div class="sec-head reveal">
     <span class="tag">interactive</span>
     <h2>Query me</h2>
@@ -107,21 +114,23 @@
     <div class="console-in"><span>❯</span><input id="cIn" autocomplete="off" spellcheck="false" placeholder="SELECT * FROM experience WHERE lead = true" /></div>
   </div>
   <div class="console-hints" id="cHints"></div>
-</section>
+</div></section>
 
 <!-- ── contact ──────────────────────────────────────────── -->
-<section id="contact">
+<section id="contact"><div class="wrap">
   <div class="sec-head reveal">
     <span class="tag">sink</span>
     <h2>Get in touch</h2>
   </div>
   <p class="sec-sub reveal" id="statusLine"></p>
   <div class="contact-grid" id="contactGrid"></div>
-</section>
+</div></section>
 
 <footer>
-  <span id="footL"></span>
-  <span>built as a DAG · no trackers · <span id="footR"></span></span>
+  <div class="wrap foot-inner">
+    <span id="footL"></span>
+    <span>built as a DAG · no trackers · <span id="footR"></span></span>
+  </div>
 </footer>
 
 <!-- ── drawer ───────────────────────────────────────────── -->

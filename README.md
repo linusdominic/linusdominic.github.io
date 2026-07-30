@@ -10,12 +10,16 @@ static site — no framework, no build step, no trackers.
 
 - Vanilla ES modules, HTML5 Canvas (2D), CSS custom properties
 - All content lives in `data.js` — edit that file, nothing else
+- Three categorical node colours only (`TYPE_META`), validated all-pairs for
+  colour-vision deficiency against the dark surface. The current role is marked
+  by state (a mint ring plus motion), never by a fourth hue.
 - Deployed to GitHub Pages from `main` / root
 
 ## Features
 
 - **Career DAG** — draggable nodes, hover-to-highlight lineage, animated particle flow.
   Auto-switches to a vertical layout below 720px.
+- **Hero ambient graph** — a slow, decorative miniature of the same idea (`#ambient`).
 - **Detail drawer** — click any node for the full run log.
 - **Query console** — a real command surface over the résumé (`help`, `select * from experience`,
   `marketplace`, `lead`).

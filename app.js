@@ -4,6 +4,7 @@ const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const ACCENT = "#00e5a0";   // state / "now", never a category colour
 
 /* ══════════════════ BOOT ══════════════════ */
 const BOOT = [
@@ -111,7 +112,7 @@ const particles = [];
 function setMode() {
   VERT = cv.clientWidth < 720;
   if (VERT) { NW = 138; NH = 44; LAYER_STEP = 108; SLOT_STEP = 150; }
-  else { NW = 168; NH = 52; LAYER_STEP = 248; SLOT_STEP = 150; }
+  else { NW = 182; NH = 54; LAYER_STEP = 258; SLOT_STEP = 152; }
 }
 function layout() {
   setMode();
@@ -197,7 +198,7 @@ function draw() {
   ctx.clearRect(0, 0, cw, ch);
 
   // faint grid
-  ctx.strokeStyle = "rgba(120,160,200,.05)";
+  ctx.strokeStyle = "rgba(126,158,191,.045)";
   ctx.lineWidth = 1;
   const g = 40 * view.s;
   for (let x = view.x % g; x < cw; x += g) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, ch); ctx.stroke(); }
@@ -217,7 +218,7 @@ function draw() {
           [C2X, C2Y] = w2s(p.c2x, p.c2y), [X2, Y2] = w2s(p.x2, p.y2);
     ctx.moveTo(X1, Y1);
     ctx.bezierCurveTo(C1X, C1Y, C2X, C2Y, X2, Y2);
-    ctx.strokeStyle = on ? TYPE_META[b.type].color : "rgba(120,160,200,.20)";
+    ctx.strokeStyle = on ? TYPE_META[b.type].color : "rgba(126,158,191,.18)";
     ctx.lineWidth = on ? 1.8 : 1;
     ctx.globalAlpha = on ? 0.9 : 1;
     ctx.stroke();
@@ -231,7 +232,7 @@ function draw() {
     ctx.lineTo(AX - 7 * Math.cos(ang - 0.4), AY - 7 * Math.sin(ang - 0.4));
     ctx.lineTo(AX - 7 * Math.cos(ang + 0.4), AY - 7 * Math.sin(ang + 0.4));
     ctx.closePath();
-    ctx.fillStyle = on ? TYPE_META[b.type].color : "rgba(120,160,200,.32)";
+    ctx.fillStyle = on ? TYPE_META[b.type].color : "rgba(126,158,191,.3)";
     ctx.fill();
   });
 
@@ -266,13 +267,13 @@ function draw() {
     if (n.current || active) {
       const pulse = 0.5 + 0.5 * Math.sin(tick / 24);
       ctx.shadowBlur = (active ? 26 : 12) + pulse * 10;
-      ctx.shadowColor = meta.color;
+      ctx.shadowColor = n.current ? ACCENT : meta.color;
     }
     roundRect(x, y, w, h, 9 * view.s);
     ctx.fillStyle = active ? "rgba(16,24,34,.98)" : "rgba(10,15,22,.94)";
     ctx.fill();
     ctx.shadowBlur = 0;
-    ctx.strokeStyle = active || n.current ? meta.color : "rgba(120,160,200,.28)";
+    ctx.strokeStyle = n.current ? ACCENT : active ? meta.color : "rgba(126,158,191,.26)";
     ctx.lineWidth = active ? 1.9 : 1.1;
     ctx.stroke();
 
@@ -296,8 +297,12 @@ function draw() {
     ctx.fillText(clip(n.sub, w - 22 * view.s, `500 ${fs2}px monospace`), x + 12 * view.s, sy + 9 * view.s);
 
     if (n.current) {
-      ctx.fillStyle = meta.color;
-      ctx.beginPath(); ctx.arc(x + w - 10 * view.s, y + 10 * view.s, 3 * view.s, 0, 7); ctx.fill();
+      const r = 3 * view.s, cx = x + w - 11 * view.s, cy = y + 10 * view.s;
+      ctx.fillStyle = ACCENT;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
+      ctx.globalAlpha = (dim ? 0.3 : 1) * (0.35 + 0.35 * Math.sin(tick / 22));
+      ctx.beginPath(); ctx.arc(cx, cy, r + 3.5 * view.s, 0, 7); ctx.fill();
+      ctx.globalAlpha = dim ? 0.3 : 1;
     }
     ctx.globalAlpha = 1;
   });
@@ -367,16 +372,161 @@ $("#btnFlow").onclick = (e) => {
 window.addEventListener("resize", resize);
 
 // legend
-$("#legend").innerHTML = Object.entries(TYPE_META)
-  .map(([k, v]) => `<span class="chip"><i style="background:${v.color}"></i>${v.name}</span>`)
-  .join("");
+$("#legend").innerHTML =
+  Object.entries(TYPE_META)
+    .map(([k, v]) => `<span class="chip"><i style="background:${v.color}"></i>${v.name}</span>`)
+    .join("") +
+  `<span class="chip state"><i></i>CURRENT</span>`;
 
 layout(); resize(); draw();
+
+/* ══════════════════ HERO AMBIENT GRAPH ══════════════════ */
+/* A slow, non-interactive miniature of the same idea: layered nodes,
+   curved edges, data moving along them. Decorative only, so it is
+   aria-hidden and it does not run under prefers-reduced-motion.      */
+(function ambient() {
+  const c = $("#ambient");
+  if (!c) return;
+  const g = c.getContext("2d");
+  const COLORS = [TYPE_META.role.color, TYPE_META.platform.color, TYPE_META.data.color];
+  const LAYERS = [3, 4, 4, 3];
+  let nodes = [], links = [], dots = [], w = 0, h = 0, t = 0;
+
+  function build() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = c.clientWidth; h = c.clientHeight;
+    if (!w || !h) return;
+    c.width = w * dpr; c.height = h * dpr;
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    nodes = []; links = [];
+    const padX = w * 0.10, padY = h * 0.11;
+    const stepX = (w - padX * 2) / (LAYERS.length - 1);
+    LAYERS.forEach((count, li) => {
+      for (let i = 0; i < count; i++) {
+        const spanY = h - padY * 2;
+        nodes.push({
+          layer: li,
+          bx: padX + li * stepX,
+          by: padY + (count === 1 ? spanY / 2 : (spanY / (count - 1)) * i),
+          x: 0, y: 0,
+          r: 2.9 + Math.random() * 2.1,
+          c: COLORS[(li + i) % COLORS.length],
+          ph: Math.random() * Math.PI * 2,
+          amp: 3 + Math.random() * 5,
+        });
+      }
+    });
+    // Only connect neighbours that are vertically close. Long sweeping edges
+    // make the whole thing read as a tangle rather than a pipeline.
+    const reach = (h - padY * 2) * 0.42;
+    nodes.forEach((a, i) => {
+      nodes.forEach((b, j) => {
+        if (b.layer !== a.layer + 1) return;
+        if (Math.abs(a.by - b.by) > reach) return;
+        if (Math.random() < 0.62) links.push([i, j]);
+      });
+    });
+    // guarantee every node past the first layer is reachable
+    nodes.forEach((b, j) => {
+      if (b.layer === 0) return;
+      if (links.some(([, y]) => y === j)) return;
+      // fall back to the vertically nearest node one layer back
+      let best = -1, bd = Infinity;
+      nodes.forEach((a, i) => {
+        if (a.layer !== b.layer - 1) return;
+        const d = Math.abs(a.by - b.by);
+        if (d < bd) { bd = d; best = i; }
+      });
+      if (best >= 0) links.push([best, j]);
+    });
+    dots = [];
+  }
+
+  const cp = (a, b) => {
+    const dx = Math.max(14, (b.x - a.x) * 0.34);
+    return [a.x + dx, a.y, b.x - dx, b.y];
+  };
+  const at = (a, b, p) => {
+    const [c1x, c1y, c2x, c2y] = cp(a, b), u = 1 - p;
+    return [
+      u * u * u * a.x + 3 * u * u * p * c1x + 3 * u * p * p * c2x + p * p * p * b.x,
+      u * u * u * a.y + 3 * u * u * p * c1y + 3 * u * p * p * c2y + p * p * p * b.y,
+    ];
+  };
+
+  function frame() {
+    if (!w || !h) { requestAnimationFrame(frame); return; }
+    t++;
+    g.clearRect(0, 0, w, h);
+
+    nodes.forEach((n) => {
+      n.x = n.bx + Math.sin(t / 230 + n.ph) * n.amp;
+      n.y = n.by + Math.cos(t / 290 + n.ph) * n.amp * 0.7;
+    });
+
+    links.forEach(([i, j]) => {
+      const a = nodes[i], b = nodes[j];
+      const [c1x, c1y, c2x, c2y] = cp(a, b);
+      g.beginPath();
+      g.moveTo(a.x, a.y);
+      g.bezierCurveTo(c1x, c1y, c2x, c2y, b.x, b.y);
+      g.strokeStyle = "rgba(126,158,191,.22)";
+      g.lineWidth = 1;
+      g.stroke();
+    });
+
+    if (t % 9 === 0 && dots.length < 40 && links.length) {
+      const l = links[(Math.random() * links.length) | 0];
+      dots.push({ l, p: 0, sp: 0.0028 + Math.random() * 0.0034, c: nodes[l[1]].c });
+    }
+    for (let i = dots.length - 1; i >= 0; i--) {
+      const d = dots[i];
+      d.p += d.sp;
+      if (d.p >= 1) { dots.splice(i, 1); continue; }
+      const [x, y] = at(nodes[d.l[0]], nodes[d.l[1]], d.p);
+      g.globalAlpha = Math.sin(d.p * Math.PI) * 0.85;
+      g.fillStyle = d.c;
+      g.shadowBlur = 9; g.shadowColor = d.c;
+      g.beginPath(); g.arc(x, y, 2, 0, 7); g.fill();
+      g.shadowBlur = 0; g.globalAlpha = 1;
+    }
+
+    nodes.forEach((n) => {
+      g.beginPath(); g.arc(n.x, n.y, n.r + 4, 0, 7);
+      g.fillStyle = n.c; g.globalAlpha = 0.1; g.fill(); g.globalAlpha = 1;
+      g.beginPath(); g.arc(n.x, n.y, n.r, 0, 7);
+      g.fillStyle = n.c; g.fill();
+    });
+
+    requestAnimationFrame(frame);
+  }
+
+  build();
+  window.addEventListener("resize", build);
+  if (REDUCED) {
+    // draw one still frame and stop
+    nodes.forEach((n) => { n.x = n.bx; n.y = n.by; });
+    links.forEach(([i, j]) => {
+      const a = nodes[i], b = nodes[j];
+      const [c1x, c1y, c2x, c2y] = cp(a, b);
+      g.beginPath(); g.moveTo(a.x, a.y);
+      g.bezierCurveTo(c1x, c1y, c2x, c2y, b.x, b.y);
+      g.strokeStyle = "rgba(126,158,191,.16)"; g.lineWidth = 1; g.stroke();
+    });
+    nodes.forEach((n) => { g.beginPath(); g.arc(n.x, n.y, n.r, 0, 7); g.fillStyle = n.c; g.fill(); });
+  } else {
+    requestAnimationFrame(frame);
+  }
+})();
 
 /* ══════════════════ DRAWER ══════════════════ */
 function openDrawer(n) {
   const meta = TYPE_META[n.type];
-  $("#dKind").innerHTML = `<span style="color:${meta.color}">${meta.name}</span> <span style="color:var(--txt-faint)">· ${n.kind}</span>`;
+  $("#dKind").innerHTML =
+    `<i style="background:${n.current ? ACCENT : meta.color}"></i>` +
+    `<span style="color:${n.current ? ACCENT : meta.color}">${n.current ? "CURRENT ROLE" : meta.name}</span>` +
+    `<span style="color:var(--ink-4)">· ${n.kind}</span>`;
   $("#dTitle").textContent = n.label;
   $("#dSub").textContent = n.sub;
   $("#dMeta").innerHTML = [n.period, n.place].filter(Boolean).map((x) => `<span>${x}</span>`).join("");
@@ -397,14 +547,16 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeDra
 /* ══════════════════ LISTS ══════════════════ */
 $("#expList").innerHTML = NODES.filter((n) => n.kind === "role")
   .slice().reverse()
-  .map((n) => `<div class="exp-card" data-id="${n.id}">
-      <div class="row1">
-        <h3>${n.label}${n.badge ? `<span class="badge">${n.badge}</span>` : ""}</h3>
-        <span class="per">${n.period}</span>
-      </div>
+  .map((n) => `<div class="tl-item${n.current ? " now" : ""}" data-id="${n.id}" tabindex="0" role="button">
+      <h3>${n.label}${n.badge ? `<span class="badge">${n.badge}</span>` : ""}</h3>
+      <span class="per">${n.period}</span>
       <div class="sb">${n.sub} · ${n.place}</div>
     </div>`).join("");
-$$(".exp-card").forEach((c) => (c.onclick = () => openDrawer(byId[c.dataset.id])));
+$$(".tl-item").forEach((c) => {
+  const go = () => openDrawer(byId[c.dataset.id]);
+  c.onclick = go;
+  c.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } };
+});
 
 $("#skillGrid").innerHTML = SKILLS.map((s) => `
   <div class="skill-card">

@@ -18,19 +18,19 @@ export const PROFILE = {
     "Data engineer and architect with 6+ years building platforms on top of messy operational systems. I lead a team of 4 to 6 engineers at Altair Capital Group, where I own the data architecture, the AWS footprint the whole platform runs on, and every third-party integration we depend on.",
   stats: [
     { k: "years_experience", v: 6, suffix: "+" },
-    { k: "entities_modeled", v: 2, suffix: "M" },
+    { k: "records_modeled", v: 2, suffix: "M" },
     { k: "engineers_led", v: 6, suffix: "" },
-    { k: "vendor_integrations", v: 8, suffix: "+" },
+    { k: "integrations", v: 8, suffix: "+" },
   ],
 };
 
-// type: source | transform | warehouse | serve | ai | lead | platform | infra | vendor
+// type: role | platform | data   (see TYPE_META at the foot of this file)
 export const NODES = [
   {
     id: "bleed",
     label: "Bleed AI",
     sub: "Lead Support Eng. / Data Analyst",
-    type: "source",
+    type: "role",
     layer: 0,
     period: "Dec 2019 – Nov 2021",
     place: "Karachi, Pakistan",
@@ -46,7 +46,7 @@ export const NODES = [
     id: "arpatech",
     label: "Arpatech",
     sub: "Data & ML Engineer",
-    type: "source",
+    type: "role",
     layer: 0,
     period: "Jan 2022 – Jun 2023",
     place: "Karachi, Pakistan",
@@ -64,7 +64,7 @@ export const NODES = [
     short: "Pure Harvest",
     label: "Pure Harvest",
     sub: "Data Engineer",
-    type: "transform",
+    type: "role",
     layer: 1,
     period: "Jun 2023 – May 2025",
     place: "Remote · Smart Farms",
@@ -83,7 +83,7 @@ export const NODES = [
     short: "VentureDive",
     label: "VentureDive",
     sub: "Senior Data Engineer",
-    type: "transform",
+    type: "role",
     layer: 1,
     period: "Jun 2025 – Dec 2025",
     place: "Karachi, Pakistan",
@@ -101,7 +101,7 @@ export const NODES = [
     short: "Altair",
     label: "Altair Capital Group",
     sub: "Lead Data Engineer / Data Architect",
-    type: "lead",
+    type: "role",
     layer: 2,
     period: "Dec 2025 – Present",
     place: "Remote · US real-estate finance",
@@ -142,7 +142,7 @@ export const NODES = [
     short: "Journey Model",
     label: "Customer Journey Model",
     sub: "Unified domain model · ~2M records",
-    type: "warehouse",
+    type: "data",
     layer: 3,
     kind: "project",
     period: "Altair Capital Group",
@@ -158,7 +158,7 @@ export const NODES = [
     short: "AI Intel",
     label: "AI Conversation Intelligence",
     sub: "LLM layer behind the AI-TM agent",
-    type: "ai",
+    type: "platform",
     layer: 3,
     kind: "project",
     period: "Altair Capital Group",
@@ -176,7 +176,7 @@ export const NODES = [
     short: "AWS Infra",
     label: "AWS Infrastructure",
     sub: "The footprint it all runs on",
-    type: "infra",
+    type: "platform",
     layer: 4,
     kind: "project",
     period: "Altair Capital Group",
@@ -194,7 +194,7 @@ export const NODES = [
     short: "Vendors",
     label: "Vendor Integrations",
     sub: "Zoho, voice, bookings, Cotality",
-    type: "vendor",
+    type: "platform",
     layer: 4,
     kind: "project",
     period: "Altair Capital Group",
@@ -212,7 +212,7 @@ export const NODES = [
     short: "BI Platform",
     label: "Programmatic BI Platform",
     sub: "Apache Superset · BI as code",
-    type: "serve",
+    type: "data",
     layer: 4,
     kind: "project",
     period: "Altair Capital Group",
@@ -230,7 +230,7 @@ export const NODES = [
     short: "Reconciliation",
     label: "Reconciliation Framework",
     sub: "Warehouse vs origination platform",
-    type: "serve",
+    type: "data",
     layer: 4,
     kind: "project",
     period: "Altair Capital Group",
@@ -336,13 +336,11 @@ export const EDUCATION = {
 };
 
 export const TYPE_META = {
-  source:    { color: "#4ea3ff", name: "SOURCE" },
-  transform: { color: "#00e5a0", name: "TRANSFORM" },
-  lead:      { color: "#ffb020", name: "LEAD" },
-  platform:  { color: "#7c9cff", name: "PLATFORM" },
-  warehouse: { color: "#c17bff", name: "WAREHOUSE" },
-  ai:        { color: "#ff5f9e", name: "AI / ML" },
-  infra:     { color: "#ff9d5c", name: "INFRA" },
-  vendor:    { color: "#f2d75e", name: "VENDORS" },
-  serve:     { color: "#5eead4", name: "SERVE" },
+  // Three categories only. Validated all-pairs on the dark surface with the
+  // dataviz palette validator: worst CVD deutan 9.4, worst normal-vision 20.9.
+  // A fourth hue fails both floors, so "current role" is encoded as state
+  // (a mint ring plus motion) rather than as another colour.
+  role:     { color: "#3987e5", name: "ROLE" },
+  platform: { color: "#d95926", name: "PLATFORM" },
+  data:     { color: "#199e70", name: "DATA" },
 };
