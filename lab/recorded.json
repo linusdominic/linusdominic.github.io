@@ -1,0 +1,219 @@
+{
+ "reconkit": "$ reconkit run --all\nFAIL  loans  3 missing in left, 7 missing in right, 16 changed  0.36s\n  left   oltp:lending.loans  50,000 rows  4 queries, 2,880 rows downloaded\n  right  warehouse:analytics.fct_loans  49,996 rows  4 queries, 2,876 rows downloaded\n  strategy bisect/range, 1 level(s), 23 rows within tolerance\n  ...\n\u2502 changed          \u2502 1405    \u2502 originated_at    \u2502 2024-03-22 10:56:02.000000 \u2502 2024-03-22 02:56:02.000000 \u2502\n\u2502 changed          \u2502 4399    \u2502 principal_amount \u2502 419425.89                  \u2502 419425.90                  \u2502",
+ "webhooks": "$ make demo && make verify\nloadgen: sent 3502 in 32.7s = 107.2 req/s\n...\nPASS  every accepted request is archived, byte-identical                              3349 accepted requests -> 3072 distinct objects, 1,018,605 bytes compared\nPASS  state table equals the state computed from ground truth                         1220 entities, every attribute equal (3001 events folded)\nPASS  the DLQ contains exactly the poison messages                                    3 messages for 3 payloads; expected 3 payloads x 1\nPASS  compacted Parquet has one row per genuine event, content equal                  3001 events in 6 Parquet files, every column equal\n...\n18 of 18 invariants hold",
+ "warehouse": [
+  {
+   "id": "gross_sales_month.a",
+   "question": "What are gross sales so far this month?",
+   "request": {
+    "name": "query_metric",
+    "input": {
+     "metric": "gross_sales",
+     "time_range": {
+      "preset": "this_month"
+     }
+    }
+   },
+   "answer": "Gross sales so far this month (November 1 to 12:40 CST today) are $2.52M. This is before discounts and returns, and it excludes cancelled orders.",
+   "right": true,
+   "baseline": {
+    "mode": "sql_schema",
+    "answer": "Gross sales so far this month (1\u201317 November 2026, up to now) are $2.42M, before discounts, across 6,265 order lines. This excludes QA test orders and cancelled or returned orders."
+   }
+  },
+  {
+   "id": "gross_sales_month.b",
+   "question": "Month to date, what is our gross sales figure?",
+   "request": {
+    "name": "query_metric",
+    "input": {
+     "metric": "gross_sales",
+     "time_range": {
+      "preset": "this_month"
+     }
+    }
+   },
+   "answer": "Month-to-date gross sales for November 2026 (1 to 17 November, up to 12:40 CST) is $2.52M. This is the value of all non-cancelled orders before discounts and returns are taken out. The data is current as of 12:39 CST.",
+   "right": true,
+   "baseline": {
+    "mode": "sql_schema",
+    "answer": "Month-to-date gross sales are $2.42M (1\u201317 November 2026, through 12:40 CST), from 6,265 order lines. This is quantity \u00d7 unit price before discounts, excluding test orders and cancelled or returned orders."
+   }
+  },
+  {
+   "id": "cancellation_rate_7d.a",
+   "question": "What was the cancellation rate over the last 7 full days, not counting today?",
+   "request": {
+    "name": "query_metric",
+    "input": {
+     "metric": "cancellation_rate",
+     "time_range": {
+      "preset": "last_7_days"
+     }
+    }
+   },
+   "answer": "The cancellation rate over the last 7 complete days (10 to 16 November, today excluded) was 4.8%. This is cancelled orders as a share of all orders placed.",
+   "right": true,
+   "baseline": {
+    "mode": "sql_schema",
+    "answer": "The cancellation rate was 5.03% for Monday 9 November through Sunday 15 November 2026 (the last 7 full days, excluding today and QA test orders). That is 149 cancelled order lines out of 2,963."
+   }
+  },
+  {
+   "id": "return_rate_last_month.a",
+   "question": "What was the return rate last month?",
+   "request": {
+    "name": "query_metric",
+    "input": {
+     "metric": "return_rate",
+     "time_range": {
+      "preset": "last_month"
+     }
+    }
+   },
+   "answer": "The return rate for October 2026 (the whole of last month) was 4.4%. This is returned orders as a share of fulfilled orders (completed plus returned), with cancelled orders excluded from both sides.",
+   "right": true,
+   "baseline": {
+    "mode": "sql_schema",
+    "answer": "Last month's return rate was **4.2%** of order lines: 551 of 13,220 non-test orders placed in October 2026 (America/Chicago time) came back as returned. Measured by cases, it was 4.6% (18,102 of 389,322 cases). Both include cancelled orders in the denominator, and test orders are excluded."
+   }
+  },
+  {
+   "id": "return_rate_last_month.b",
+   "question": "What percentage of orders came back as returns last month?",
+   "request": {
+    "name": "query_metric",
+    "input": {
+     "metric": "return_rate",
+     "time_range": {
+      "preset": "last_month"
+     }
+    }
+   },
+   "answer": "The return rate for October 2026 was 4.4%. This is returned orders as a share of fulfilled orders (completed plus returned), with cancelled orders left out of both sides.",
+   "right": true,
+   "baseline": {
+    "mode": "sql_schema",
+    "answer": "About 4.17% of orders were returned in October 2026 (551 of 13,220 orders). I counted all non-test orders placed from 1 to 31 October in Chicago time, including cancelled ones in the denominator."
+   }
+  },
+  {
+   "id": "production_last_week_vs_prior.a",
+   "question": "Did we produce more or fewer cases last week than the week before, and by how much in percent?",
+   "request": {
+    "name": "query_metric",
+    "input": {
+     "metric": "units_produced",
+     "time_range": {
+      "preset": "last_week"
+     },
+     "compare_previous": true
+    }
+   },
+   "answer": "We produced fewer cases last week. Production was 936,117 cases for Monday 9 to Sunday 15 November, down 10,976 cases (-1.2%) from 947,093 the week before (2 to 8 November). This counts all cases produced, including those later scrapped.",
+   "right": true,
+   "baseline": {
+    "mode": "sql_schema",
+    "answer": "We produced fewer cases last week: 929,795 cases (Mon 9 to Sun 15 Nov) versus 950,345 the week before (Mon 2 to Sun 8 Nov), down about 2.2%, or 20,550 cases. Figures include all production runs, scrapped cases included."
+   }
+  },
+  {
+   "id": "net_sales_today.a",
+   "question": "What are total sales today?",
+   "request": {
+    "name": "query_metric",
+    "input": {
+     "metric": "net_sales",
+     "time_range": {
+      "preset": "today"
+     }
+    }
+   },
+   "answer": "Total net sales today (Tue 17 Nov, midnight up to 12:40 CST) are $68,401.97. This is net of discounts and excludes cancelled and returned orders.",
+   "right": true,
+   "baseline": null
+  },
+  {
+   "id": "net_sales_today.b",
+   "question": "How much revenue have we brought in so far today?",
+   "request": {
+    "name": "query_metric",
+    "input": {
+     "metric": "net_sales",
+     "time_range": {
+      "preset": "today"
+     }
+    }
+   },
+   "answer": "So far today (midnight to 12:40 CST), net sales are $68,402. That is revenue from completed orders after discounts, excluding cancelled and returned orders. The data is current as of 12:39 CST.",
+   "right": true,
+   "baseline": null
+  },
+  {
+   "id": "net_sales_yesterday.a",
+   "question": "What were net sales yesterday?",
+   "request": {
+    "name": "query_metric",
+    "input": {
+     "metric": "net_sales",
+     "time_range": {
+      "preset": "yesterday"
+     },
+     "compare_previous": true
+    }
+   },
+   "answer": "Net sales yesterday (Monday 16 November) were $127,342.98, net of discounts and excluding cancelled and returned orders. That is up about $36,649, or 40.4%, from Sunday 15 November ($90,693.66).",
+   "right": true,
+   "baseline": null
+  },
+  {
+   "id": "net_sales_yesterday.b",
+   "question": "How did we do on sales yesterday? Give me the total.",
+   "request": {
+    "name": "query_metric",
+    "input": {
+     "metric": "net_sales",
+     "time_range": {
+      "preset": "yesterday"
+     },
+     "compare_previous": true
+    }
+   },
+   "answer": "Net sales yesterday (Monday 16 November) were $127,342.98, net of discounts and excluding cancelled and returned orders. That is up $36,649.32, or about 40.4%, on Sunday 15 November ($90,693.66).",
+   "right": true,
+   "baseline": null
+  },
+  {
+   "id": "order_count_yesterday.a",
+   "question": "How many orders did we complete yesterday?",
+   "request": {
+    "name": "query_metric",
+    "input": {
+     "metric": "order_count",
+     "time_range": {
+      "preset": "yesterday"
+     }
+    }
+   },
+   "answer": "We completed 393 orders yesterday (Monday 16 November). This counts completed orders only, so cancelled and returned orders are excluded.",
+   "right": true,
+   "baseline": null
+  },
+  {
+   "id": "order_count_yesterday.b",
+   "question": "What was yesterday's order count?",
+   "request": {
+    "name": "query_metric",
+    "input": {
+     "metric": "order_count",
+     "time_range": {
+      "preset": "yesterday"
+     }
+    }
+   },
+   "answer": "Yesterday (Monday 16 November) there were 393 completed orders. This excludes cancelled and returned orders.",
+   "right": true,
+   "baseline": null
+  }
+ ]
+}

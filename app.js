@@ -1,4 +1,5 @@
 import { PROFILE, NODES, EDGES, SKILLS, EDUCATION, TYPE_META } from "./data.js";
+import { lab, renderCards, STARTERS } from "./lab.js";
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -55,6 +56,7 @@ function finishBoot() {
 /* ══════════════════ HERO ══════════════════ */
 const ROLES = [
   "Lead Data Engineer",
+  "Agentic AI systems, measured",
   "Data Architect",
   "Team Lead, 4–6 engineers",
   "Lakehouse & Medallion design",
@@ -590,7 +592,16 @@ function table(rows, cols) {
 }
 
 const CMDS = {
-  help: () => w(`<span class="k">Available:</span>
+  help: () => w(`<span class="k">Try the projects:</span>
+  <span class="v">lab</span>               the nine projects and what runs here
+  <span class="v">callagent</span>         the calling agent's rules, live in your browser
+  <span class="v">callqa</span>            the call grader's masking and scoring, live
+  <span class="v">askwh</span>             recorded answers from the warehouse assistant
+  <span class="v">reconkit demo</span>     recorded run of the table diff
+  <span class="v">webhooks demo</span>     recorded run of the 18 invariants
+  <span class="v">open &lt;project&gt;</span>    the result, the caveat and the link
+
+<span class="k">Query the résumé:</span>
   <span class="v">help</span>              this message
   <span class="v">tables</span>            list queryable tables
   <span class="v">select * from X</span>   X ∈ experience | projects | skills | leadership | education
@@ -706,6 +717,7 @@ function run(raw) {
   w(`<span class="q">❯ ${escapeHtml(cmd)}</span>`);
   const low = cmd.toLowerCase().replace(/;$/, "");
   if (CMDS[low]) return CMDS[low]();
+  if (lab.handles(cmd)) return lab.run(cmd, (html) => w(html));
   const m = low.match(/from\s+(\w+)/);
   if (low.startsWith("select") && m && SELECTS[m[1]]) {
     let res = SELECTS[m[1]]();
@@ -723,18 +735,27 @@ function run(raw) {
 const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { run(inp.value); inp.value = ""; } });
-$("#cHints").innerHTML = ["help", "whoami", "select * from experience", "infra", "integrations", "marketplace", "lead", "clear"]
-  .map((h) => `<button data-c="${h}">${h}</button>`).join("");
+$("#cHints").innerHTML = [...STARTERS, "whoami", "select * from experience", "help", "clear"]
+  .map((h) => `<button data-c="${escapeHtml(h)}">${escapeHtml(h)}</button>`).join("");
 $$("#cHints button").forEach((b) => (b.onclick = () => { run(b.dataset.c); inp.focus(); }));
-w(`<span class="k">career.db</span> connected · 5 roles, ${projs.length} projects, ${SKILLS.length} skill groups indexed.
-type <span class="v">help</span> to begin.`);
+w(`<span class="k">lab</span> ready · 9 projects. Two run their real code here, in your browser. Others replay recorded runs.
+<span class="k">career.db</span> connected · 5 roles, ${projs.length} projects, ${SKILLS.length} skill groups indexed.
+type <span class="v">lab</span> or click a command below. <span class="v">help</span> lists everything.`);
+renderCards($("#labCards"), (c) => {
+  $("#query").scrollIntoView({ block: "center", behavior: REDUCED ? "auto" : "smooth" });
+  run(c);
+});
+// A link can carry a command: /?run=callagent%20campaign opens the shell and runs it.
+const linked = new URLSearchParams(location.search).get("run");
+if (linked) setTimeout(() => { $("#query").scrollIntoView({ block: "center" }); run(linked.slice(0, 200)); }, 700);
 
 /* ══════════════════ PALETTE ══════════════════ */
 const PAL = [
   ...NODES.map((n) => ({ t: n.label, s: n.kind, go: () => openDrawer(n) })),
   { t: "The pipeline", s: "section", go: () => jump("#pipeline") },
   { t: "The stack", s: "section", go: () => jump("#skills") },
-  { t: "Query console", s: "section", go: () => jump("#query") },
+  { t: "Project lab", s: "section", go: () => jump("#lab") },
+  { t: "Shell", s: "section", go: () => jump("#query") },
   { t: "Contact", s: "section", go: () => jump("#contact") },
   { t: "Download CV", s: "action", go: () => $("#cvBtn").click() },
   { t: "LinkedIn", s: "link", go: () => open(PROFILE.linkedin, "_blank") },

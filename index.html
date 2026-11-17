@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Linus Dominic Nathaniel · Lead Data Engineer / Data Architect</title>
-<meta name="description" content="Lead Data Engineer and Data Architect. I lead a team of 4-6 engineers at Altair Capital Group, owning the data architecture, the AWS platform and every vendor integration." />
+<title>Linus Dominic Nathaniel · Lead Data Engineer · AI Engineering</title>
+<meta name="description" content="Lead data engineer and data architect who builds and measures LLM agents. Try nine open-source projects in a shell: two run their real Python in your browser." />
 <meta name="author" content="Linus Dominic Nathaniel" />
 <meta name="theme-color" content="#05070a" />
 
 <meta property="og:type" content="website" />
-<meta property="og:title" content="Linus Dominic Nathaniel · Lead Data Engineer / Data Architect" />
-<meta property="og:description" content="I get systems that each think they own the customer to agree on one version of them." />
+<meta property="og:title" content="Linus Dominic Nathaniel · Lead Data Engineer · AI Engineering" />
+<meta property="og:description" content="Nine open-source projects you can try in a shell. Two run their real Python in your browser." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -33,11 +33,11 @@
 
 <!-- ── nav ──────────────────────────────────────────────── -->
 <header class="nav">
-  <div class="brand"><span class="dot"></span><b>linus_dominic</b><span>/ lead_data_engineer</span></div>
+  <div class="brand"><span class="dot"></span><b>linus.dominic</b><span>/nathaniel</span></div>
   <nav class="links">
+    <a href="#lab">lab</a>
     <a href="#pipeline">pipeline</a>
     <a href="#skills">stack</a>
-    <a href="#query">query</a>
     <a href="#contact">contact</a>
     <button class="kbd-hint" id="palBtn">⌘K</button>
   </nav>
@@ -47,13 +47,14 @@
 <div class="hero">
  <div class="wrap hero-grid">
   <div class="hero-copy">
-    <div class="eyebrow">Lead Data Engineer · Data Architect</div>
+    <div class="eyebrow">Lead Data Engineer · Data Architect · AI Engineering</div>
     <h1 class="name">Linus Dominic<br />Nathaniel</h1>
     <div class="role-line"><span id="typed"></span><span class="cursor">&nbsp;</span></div>
     <p class="tagline" id="tagline"></p>
     <p class="summary" id="summary"></p>
     <div class="cta-row">
-      <a class="btn primary" href="#pipeline">↓ Explore the pipeline</a>
+      <a class="btn primary" href="#lab">❯ Test my projects</a>
+      <a class="btn" href="#pipeline">↓ Explore the pipeline</a>
       <a class="btn" id="cvBtn" href="linus-nathaniel-resume.pdf" download>⤓ Download CV</a>
       <a class="btn" href="https://www.linkedin.com/in/linus-dominic/" target="_blank" rel="noopener">LinkedIn ↗</a>
       <a class="btn" href="https://github.com/linusdominic" target="_blank" rel="noopener">GitHub ↗</a>
@@ -66,6 +67,25 @@
   </div>
  </div>
 </div>
+
+<!-- ── lab ──────────────────────────────────────────────── -->
+<section id="lab"><div class="wrap">
+  <div class="sec-head reveal">
+    <span class="tag">try it</span>
+    <h2>Test my projects</h2>
+  </div>
+  <p class="sec-sub reveal">A shell over nine open-source projects. Two of them run their real code here, in your browser: type a sentence and see whether the calling agent would be allowed to say it, or paste a line with a phone number and watch it get masked. The parts that need a database, AWS or a model replay recorded runs, and every result says which it was.</p>
+  <div class="console reveal" id="query">
+    <div class="console-bar">
+      <i class="b" style="background:#ff5f57"></i><i class="b" style="background:#febc2e"></i><i class="b" style="background:#28c840"></i>
+      <span style="margin-left:8px">visitor@linus:~/projects · python in webassembly</span>
+    </div>
+    <div class="console-out" id="cOut" aria-live="polite"></div>
+    <div class="console-in"><span>❯</span><input id="cIn" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Shell command" placeholder='callagent guard "You will get about 6.25% today."' /></div>
+  </div>
+  <div class="console-hints" id="cHints"></div>
+  <div id="labCards"></div>
+</div></section>
 
 <!-- ── DAG ──────────────────────────────────────────────── -->
 <section id="pipeline"><div class="wrap">
@@ -96,24 +116,6 @@
   </div>
   <p class="sec-sub reveal">What I reach for, grouped the way I actually think about it: architecture first, tools second.</p>
   <div class="skill-grid" id="skillGrid"></div>
-</div></section>
-
-<!-- ── console ──────────────────────────────────────────── -->
-<section id="query"><div class="wrap">
-  <div class="sec-head reveal">
-    <span class="tag">interactive</span>
-    <h2>Query me</h2>
-  </div>
-  <p class="sec-sub reveal">A real query console over this résumé. Type <code>help</code>, or try one of the presets.</p>
-  <div class="console reveal">
-    <div class="console-bar">
-      <i class="b" style="background:#ff5f57"></i><i class="b" style="background:#febc2e"></i><i class="b" style="background:#28c840"></i>
-      <span style="margin-left:8px">linus@career:~ · duckdb-ish</span>
-    </div>
-    <div class="console-out" id="cOut"></div>
-    <div class="console-in"><span>❯</span><input id="cIn" autocomplete="off" spellcheck="false" placeholder="SELECT * FROM experience WHERE lead = true" /></div>
-  </div>
-  <div class="console-hints" id="cHints"></div>
 </div></section>
 
 <!-- ── contact ──────────────────────────────────────────── -->
