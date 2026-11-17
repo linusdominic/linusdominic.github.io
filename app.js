@@ -1,5 +1,5 @@
 import { PROFILE, NODES, EDGES, SKILLS, EDUCATION, TYPE_META } from "./data.js";
-import { lab, renderCards, STARTERS } from "./lab.js";
+import { lab, renderProof, renderProjects, STARTERS } from "./lab.js";
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -7,102 +7,12 @@ const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ACCENT = "#00e5a0";   // state / "now", never a category colour
 
-/* ══════════════════ BOOT ══════════════════ */
-const BOOT = [
-  ["$ airflow dags trigger portfolio_build", 90],
-  ["  [scheduler] queued run_id=manual__2026", 60],
-  ["  ✓ extract  · 5 roles, 6 projects", 60],
-  ["  ✓ transform · resolving edges …", 70],
-  ["  ✓ load     · rendering DAG", 60],
-  ["  <span class='ok'>SUCCESS</span> · pipeline live", 40],
-];
-let booted = false;
-(async function boot() {
-  const line = $("#bootLine"), bar = $("#bootBar");
-  if (REDUCED) { finishBoot(); return; }
-
-  // Hard ceiling: never hold the page hostage, whatever the browser does to our timers.
-  setTimeout(finishBoot, 2600);
-  const skip = () => finishBoot();
-  $("#boot").addEventListener("click", skip);
-  window.addEventListener("keydown", skip, { once: true });
-
-  let acc = "";
-  for (let i = 0; i < BOOT.length && !booted; i++) {
-    const txt = BOOT[i][0];
-    const plain = txt.replace(/<[^>]+>/g, "");
-    // type in chunks, one timer per chunk rather than one per character
-    for (let c = 3; c <= plain.length && !booted; c += 3) {
-      line.innerHTML = acc + plain.slice(0, c);
-      await sleep(12);
-    }
-    acc += txt + "\n";
-    line.innerHTML = acc;
-    bar.style.width = ((i + 1) / BOOT.length) * 100 + "%";
-    await sleep(40);
-  }
-  finishBoot();
-})();
-
-function finishBoot() {
-  if (booted) return;
-  booted = true;
-  $("#bootBar").style.width = "100%";
-  $("#boot").classList.add("done");
-  document.body.classList.remove("locked");
-  startHero();
-}
-
 /* ══════════════════ HERO ══════════════════ */
-const ROLES = [
-  "Lead Data Engineer",
-  "Agentic AI systems, measured",
-  "Data Architect",
-  "Team Lead, 4–6 engineers",
-  "Lakehouse & Medallion design",
-  "AWS platform ownership",
-  "BI as code",
-];
-function startHero() {
-  $("#tagline").textContent = PROFILE.tagline;
-  $("#summary").textContent = PROFILE.summary;
-  $("#statusLine").textContent = PROFILE.status;
-  $("#footL").textContent = `© ${new Date().getFullYear()} ${PROFILE.name}`;
-  $("#footR").textContent = `last_run ${new Date().toISOString().slice(0, 10)}`;
-
-  if (REDUCED) { $("#typed").textContent = ROLES[0]; }
-  else typeLoop();
-
-  // stats
-  $("#stats").innerHTML = PROFILE.stats
-    .map((s) => `<div class="stat"><div class="num" data-to="${s.v}">0<em>${s.suffix}</em></div><div class="lbl">${s.k}</div></div>`)
-    .join("");
-  $$(".stat .num").forEach(countUp);
-}
-async function typeLoop() {
-  const el = $("#typed");
-  let i = 0;
-  while (true) {
-    const w = ROLES[i % ROLES.length];
-    for (let j = 1; j <= w.length; j++) { el.textContent = w.slice(0, j); await sleep(46); }
-    await sleep(1500);
-    for (let j = w.length; j >= 0; j--) { el.textContent = w.slice(0, j); await sleep(22); }
-    await sleep(180);
-    i++;
-  }
-}
-function countUp(el) {
-  const to = +el.dataset.to, suf = el.querySelector("em").textContent;
-  let t0 = null;
-  const step = (t) => {
-    if (!t0) t0 = t;
-    const p = Math.min((t - t0) / 1100, 1);
-    const e = 1 - Math.pow(1 - p, 3);
-    el.innerHTML = Math.round(to * e) + `<em>${suf}</em>`;
-    if (p < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
-}
+$("#tagline").textContent = PROFILE.tagline;
+$("#summary").textContent = PROFILE.summary;
+$("#statusLine").textContent = PROFILE.status;
+$("#footL").textContent = `© ${new Date().getFullYear()} ${PROFILE.name}`;
+$("#footR").textContent = `last_run ${new Date().toISOString().slice(0, 10)}`;
 
 /* ══════════════════ DAG ══════════════════ */
 const cv = $("#dag"), ctx = cv.getContext("2d");
@@ -382,146 +292,6 @@ $("#legend").innerHTML =
 
 layout(); resize(); draw();
 
-/* ══════════════════ HERO AMBIENT GRAPH ══════════════════ */
-/* A slow, non-interactive miniature of the same idea: layered nodes,
-   curved edges, data moving along them. Decorative only, so it is
-   aria-hidden and it does not run under prefers-reduced-motion.      */
-(function ambient() {
-  const c = $("#ambient");
-  if (!c) return;
-  const g = c.getContext("2d");
-  const COLORS = [TYPE_META.role.color, TYPE_META.platform.color, TYPE_META.data.color];
-  const LAYERS = [3, 4, 4, 3];
-  let nodes = [], links = [], dots = [], w = 0, h = 0, t = 0;
-
-  function build() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    w = c.clientWidth; h = c.clientHeight;
-    if (!w || !h) return;
-    c.width = w * dpr; c.height = h * dpr;
-    g.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    nodes = []; links = [];
-    const padX = w * 0.10, padY = h * 0.11;
-    const stepX = (w - padX * 2) / (LAYERS.length - 1);
-    LAYERS.forEach((count, li) => {
-      for (let i = 0; i < count; i++) {
-        const spanY = h - padY * 2;
-        nodes.push({
-          layer: li,
-          bx: padX + li * stepX,
-          by: padY + (count === 1 ? spanY / 2 : (spanY / (count - 1)) * i),
-          x: 0, y: 0,
-          r: 2.9 + Math.random() * 2.1,
-          c: COLORS[(li + i) % COLORS.length],
-          ph: Math.random() * Math.PI * 2,
-          amp: 3 + Math.random() * 5,
-        });
-      }
-    });
-    // Only connect neighbours that are vertically close. Long sweeping edges
-    // make the whole thing read as a tangle rather than a pipeline.
-    const reach = (h - padY * 2) * 0.42;
-    nodes.forEach((a, i) => {
-      nodes.forEach((b, j) => {
-        if (b.layer !== a.layer + 1) return;
-        if (Math.abs(a.by - b.by) > reach) return;
-        if (Math.random() < 0.62) links.push([i, j]);
-      });
-    });
-    // guarantee every node past the first layer is reachable
-    nodes.forEach((b, j) => {
-      if (b.layer === 0) return;
-      if (links.some(([, y]) => y === j)) return;
-      // fall back to the vertically nearest node one layer back
-      let best = -1, bd = Infinity;
-      nodes.forEach((a, i) => {
-        if (a.layer !== b.layer - 1) return;
-        const d = Math.abs(a.by - b.by);
-        if (d < bd) { bd = d; best = i; }
-      });
-      if (best >= 0) links.push([best, j]);
-    });
-    dots = [];
-  }
-
-  const cp = (a, b) => {
-    const dx = Math.max(14, (b.x - a.x) * 0.34);
-    return [a.x + dx, a.y, b.x - dx, b.y];
-  };
-  const at = (a, b, p) => {
-    const [c1x, c1y, c2x, c2y] = cp(a, b), u = 1 - p;
-    return [
-      u * u * u * a.x + 3 * u * u * p * c1x + 3 * u * p * p * c2x + p * p * p * b.x,
-      u * u * u * a.y + 3 * u * u * p * c1y + 3 * u * p * p * c2y + p * p * p * b.y,
-    ];
-  };
-
-  function frame() {
-    if (!w || !h) { requestAnimationFrame(frame); return; }
-    t++;
-    g.clearRect(0, 0, w, h);
-
-    nodes.forEach((n) => {
-      n.x = n.bx + Math.sin(t / 230 + n.ph) * n.amp;
-      n.y = n.by + Math.cos(t / 290 + n.ph) * n.amp * 0.7;
-    });
-
-    links.forEach(([i, j]) => {
-      const a = nodes[i], b = nodes[j];
-      const [c1x, c1y, c2x, c2y] = cp(a, b);
-      g.beginPath();
-      g.moveTo(a.x, a.y);
-      g.bezierCurveTo(c1x, c1y, c2x, c2y, b.x, b.y);
-      g.strokeStyle = "rgba(126,158,191,.22)";
-      g.lineWidth = 1;
-      g.stroke();
-    });
-
-    if (t % 9 === 0 && dots.length < 40 && links.length) {
-      const l = links[(Math.random() * links.length) | 0];
-      dots.push({ l, p: 0, sp: 0.0028 + Math.random() * 0.0034, c: nodes[l[1]].c });
-    }
-    for (let i = dots.length - 1; i >= 0; i--) {
-      const d = dots[i];
-      d.p += d.sp;
-      if (d.p >= 1) { dots.splice(i, 1); continue; }
-      const [x, y] = at(nodes[d.l[0]], nodes[d.l[1]], d.p);
-      g.globalAlpha = Math.sin(d.p * Math.PI) * 0.85;
-      g.fillStyle = d.c;
-      g.shadowBlur = 9; g.shadowColor = d.c;
-      g.beginPath(); g.arc(x, y, 2, 0, 7); g.fill();
-      g.shadowBlur = 0; g.globalAlpha = 1;
-    }
-
-    nodes.forEach((n) => {
-      g.beginPath(); g.arc(n.x, n.y, n.r + 4, 0, 7);
-      g.fillStyle = n.c; g.globalAlpha = 0.1; g.fill(); g.globalAlpha = 1;
-      g.beginPath(); g.arc(n.x, n.y, n.r, 0, 7);
-      g.fillStyle = n.c; g.fill();
-    });
-
-    requestAnimationFrame(frame);
-  }
-
-  build();
-  window.addEventListener("resize", build);
-  if (REDUCED) {
-    // draw one still frame and stop
-    nodes.forEach((n) => { n.x = n.bx; n.y = n.by; });
-    links.forEach(([i, j]) => {
-      const a = nodes[i], b = nodes[j];
-      const [c1x, c1y, c2x, c2y] = cp(a, b);
-      g.beginPath(); g.moveTo(a.x, a.y);
-      g.bezierCurveTo(c1x, c1y, c2x, c2y, b.x, b.y);
-      g.strokeStyle = "rgba(126,158,191,.16)"; g.lineWidth = 1; g.stroke();
-    });
-    nodes.forEach((n) => { g.beginPath(); g.arc(n.x, n.y, n.r, 0, 7); g.fillStyle = n.c; g.fill(); });
-  } else {
-    requestAnimationFrame(frame);
-  }
-})();
-
 /* ══════════════════ DRAWER ══════════════════ */
 function openDrawer(n) {
   const meta = TYPE_META[n.type];
@@ -561,10 +331,7 @@ $$(".tl-item").forEach((c) => {
 });
 
 $("#skillGrid").innerHTML = SKILLS.map((s) => `
-  <div class="skill-card">
-    <h3><span>${s.icon}</span>${s.group}</h3>
-    <ul>${s.items.map((i) => `<li>${i}</li>`).join("")}</ul>
-  </div>`).join("");
+  <div class="skill-line"><dt>${s.group}</dt><dd>${s.items.join(" · ")}</dd></div>`).join("");
 
 $("#contactGrid").innerHTML = [
   ["email", PROFILE.email, `mailto:${PROFILE.email}`],
@@ -741,10 +508,12 @@ $$("#cHints button").forEach((b) => (b.onclick = () => { run(b.dataset.c); inp.f
 w(`<span class="k">lab</span> ready · 9 projects. Two run their real code here, in your browser. Others replay recorded runs.
 <span class="k">career.db</span> connected · 5 roles, ${projs.length} projects, ${SKILLS.length} skill groups indexed.
 type <span class="v">lab</span> or click a command below. <span class="v">help</span> lists everything.`);
-renderCards($("#labCards"), (c) => {
+const runInShell = (c) => {
   $("#query").scrollIntoView({ block: "center", behavior: REDUCED ? "auto" : "smooth" });
   run(c);
-});
+};
+renderProof($("#heroProof"));
+renderProjects($("#projectList"), runInShell);
 // A link can carry a command: /?run=callagent%20campaign opens the shell and runs it.
 const linked = new URLSearchParams(location.search).get("run");
 if (linked) setTimeout(() => { $("#query").scrollIntoView({ block: "center" }); run(linked.slice(0, 200)); }, 700);
@@ -752,10 +521,10 @@ if (linked) setTimeout(() => { $("#query").scrollIntoView({ block: "center" }); 
 /* ══════════════════ PALETTE ══════════════════ */
 const PAL = [
   ...NODES.map((n) => ({ t: n.label, s: n.kind, go: () => openDrawer(n) })),
-  { t: "The pipeline", s: "section", go: () => jump("#pipeline") },
-  { t: "The stack", s: "section", go: () => jump("#skills") },
-  { t: "Project lab", s: "section", go: () => jump("#lab") },
-  { t: "Shell", s: "section", go: () => jump("#query") },
+  { t: "Experience", s: "section", go: () => jump("#pipeline") },
+  { t: "What I work with", s: "section", go: () => jump("#skills") },
+  { t: "Projects", s: "section", go: () => jump("#projects") },
+  { t: "Shell: try the projects", s: "section", go: () => jump("#lab") },
   { t: "Contact", s: "section", go: () => jump("#contact") },
   { t: "Download CV", s: "action", go: () => $("#cvBtn").click() },
   { t: "LinkedIn", s: "link", go: () => open(PROFILE.linkedin, "_blank") },

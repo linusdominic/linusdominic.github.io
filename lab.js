@@ -10,73 +10,144 @@
 //  House style: no em-dashes, no bold inside body copy.
 // ─────────────────────────────────────────────────────────────
 
+import { chart, tooltips } from "./charts.js";
+
 const PYODIDE = "https://cdn.jsdelivr.net/pyodide/v0.29.5/full/";
 const GITHUB = "https://github.com/linusdominic/";
 
-// repo, shell program, what it is, headline result, caveat, commands to try
+// Each project: where it sits on the page (tier), what it is, its headline result and
+// caveat, commands to try, and for the featured ones a short story, a screenshot and a
+// chart. Every figure in a chart is copied from that repository's results.
 export const PROJECTS = [
   {
-    repo: "outbound-call-agent", prog: "callagent", kind: "live", group: "AI engineering",
+    repo: "outbound-call-agent", prog: "callagent", kind: "live", tier: "big",
     what: "An AI agent that makes follow-up calls for a lender, with consent and do-not-call rules enforced in code.",
     metric: "199 / 200", label: "simulated calls passed every check",
     caveat: "Simulated contacts. No real calls are placed.",
+    story: [
+      "The model holds the conversation. Code decides whether the call may be placed, says the opening disclosure, honours a request to stop, and validates every booking.",
+      "Tested on 200 held-out simulated contacts. Twenty of them push for a rate, a promise of approval, or a claim to be human.",
+      "The same model with the rules only in its prompt passed 193. That gap is not statistically significant (p = 0.07), and the README says so.",
+    ],
+    shot: { src: "assets/agent-shell.jpg", w: 1400, h: 1020, alt: "The demo page: a call in which the contact asks for a rate, is refused, answers the questions and books a time, with the recorded answers beside it" },
+    chart: {
+      type: "pairs", title: "Held-out calls passing each check", note: "200 simulated contacts, both versions on the same contacts",
+      series: ["Rules enforced in code", "Rules in the prompt only"],
+      rows: [
+        { label: "Every check passed", a: 99.5, b: 96.5, ta: "199 / 200", tb: "193 / 200" },
+        { label: "No stage directions read aloud", a: 100, b: 96.5, ta: "200 / 200", tb: "193 / 200" },
+        { label: "Approved voicemail, word for word", a: 100, b: 75, ta: "8 / 8", tb: "6 / 8" },
+        { label: "Requests to stop calling honoured", a: 100, b: 100, ta: "20 / 20", tb: "20 / 20" },
+      ],
+    },
     tries: ['callagent gate --time 07:30 --tz America/Los_Angeles', 'callagent guard "You will get about 6.25% today."', "callagent replay pushy", "callagent evaluate"],
   },
   {
-    repo: "sales-call-qa", prog: "callqa", kind: "live", group: "AI engineering",
+    repo: "sales-call-qa", prog: "callqa", kind: "live", tier: "big",
     what: "Grades recorded sales calls against a script, with a quote and a timestamp behind every verdict.",
     metric: "160 / 160", label: "held-out call outcomes graded correctly",
     caveat: "Synthetic calls and text-to-speech voices.",
+    story: [
+      "Each side of the call is transcribed on the same machine, personal details are masked, and a model marks every script step with a quote as evidence. Code checks the quotes and applies the rule for a meaningful call.",
+      "The first version raised a false compliance flag four times in ten. Measuring it is how I found out.",
+      "On held-out calls every remaining false flag traced to one speech-recognition slip: \"can't guarantee\" heard as \"can guarantee\".",
+    ],
+    shot: { src: "assets/callqa-dashboard.jpg", w: 1400, h: 1257, alt: "The dashboard: headline counts, a row per loan officer with meaningful and not meaningful calls, and coverage of each script step" },
+    shot2: { src: "assets/callqa-call.jpg", text: "one call, with the quote behind each verdict" },
+    chart: {
+      type: "pairs", title: "First version against the second", note: "development set, 160 calls, speech-recognition transcripts",
+      series: ["Second version", "First version"],
+      rows: [
+        { label: "Compliance flags that were real", a: 93.8, b: 60, ta: "15 / 16", tb: "15 / 25" },
+        { label: "Personal details masked", a: 100, b: 85.5, ta: "62 / 62", tb: "53 / 62" },
+        { label: "Calls sent to a person for review", a: 16.2, b: 34.2, ta: "26 / 160", tb: "54 / 158" },
+      ],
+    },
     tries: ['callqa mask "My social is 512-44-7166, call me on 555-0142"', "callqa replay call_013", "callqa evaluate"],
   },
   {
-    repo: "ask-the-warehouse", prog: "askwh", kind: "recorded", group: "AI engineering",
+    repo: "ask-the-warehouse", prog: "askwh", kind: "recorded", tier: "big",
     what: "Answers sales and production questions from governed metric definitions, in place of dashboards.",
     metric: "46 / 46", label: "questions right; schema-only text-to-SQL got 40",
     caveat: "Simulated data on PostgreSQL. Not deployed.",
+    story: [
+      "A stakeholder asks in plain language. The answer comes from a governed metric definition, with the SQL and the freshness of the data shown beside it.",
+      "Evaluated on 46 hand-written questions, each with reference SQL, against two text-to-SQL baselines.",
+      "Text-to-SQL given the same definitions also scored 46. The definitions are what matter, more than the interface.",
+    ],
+    shot: { src: "assets/warehouse-chat.jpg", w: 1400, h: 985, alt: "The chat page answering a comparison and a breakdown, with an active digest and alert" },
+    chart: {
+      type: "single", title: "Questions answered correctly", note: "46 hand-written questions, first run", max: 46,
+      rows: [
+        { label: "Governed metric definitions", value: 46, text: "46 / 46", strong: true },
+        { label: "Text-to-SQL, given the definitions", value: 46, text: "46 / 46" },
+        { label: "Text-to-SQL, schema only", value: 40, text: "40 / 46" },
+      ],
+    },
     tries: ["askwh questions", "askwh ask 1"],
   },
   {
-    repo: "vectorless-rag-benchmark", prog: "vrbench", kind: "none", group: "AI engineering",
+    repo: "vectorless-rag-benchmark", prog: "vrbench", kind: "none", tier: "compact",
     what: "RAG where a model navigates a document's outline instead of searching a vector index, measured.",
     metric: "95% vs 75%", label: "right paragraph ranked first, against hybrid search",
     caveat: "60 model-written questions, ten checked by hand.",
+    chart: {
+      type: "single", title: "Right paragraph ranked first", note: "60 questions on Regulation Z", max: 100,
+      rows: [
+        { label: "Vectorless + summaries", value: 95, text: "95%", strong: true },
+        { label: "Vectorless", value: 82, text: "82%" },
+        { label: "Hybrid search", value: 75, text: "75%" },
+        { label: "Dense vectors", value: 72, text: "72%" },
+        { label: "BM25 keywords", value: 70, text: "70%" },
+      ],
+    },
     tries: ["open vectorless-rag-benchmark"],
   },
   {
-    repo: "agentic-docs-assistant", prog: "docs-agent", kind: "none", group: "AI engineering",
-    what: "A support agent that answers from documentation and files a ticket only after a person approves it.",
-    metric: "Human in the loop", label: "the agent pauses, a person approves, it resumes",
-    caveat: "The Cloud Run deployment is a reference, not run.",
-    tries: ["open agentic-docs-assistant"],
-  },
-  {
-    repo: "reconkit", prog: "reconkit", kind: "recorded", group: "Data platforms",
+    repo: "reconkit", prog: "reconkit", kind: "recorded", tier: "compact",
     what: "Diffs tables across databases by checksum bisection, so only the disagreeing key ranges are downloaded.",
     metric: "2,880 of 50,000", label: "rows downloaded to find every difference",
     caveat: "Postgres and DuckDB tested. Cloud warehouses not run live.",
+    chart: {
+      type: "single", title: "Rows downloaded to compare two tables", note: "the bundled example: 50,000 rows, 26 differences", max: 50000,
+      rows: [
+        { label: "Download and compare everything", value: 50000, text: "50,000" },
+        { label: "Checksum bisection", value: 2880, text: "2,880", strong: true },
+      ],
+    },
     tries: ["reconkit demo"],
   },
   {
-    repo: "serverless-webhook-ingestion", prog: "webhooks", kind: "recorded", group: "Data platforms",
+    repo: "serverless-webhook-ingestion", prog: "webhooks", kind: "recorded", tier: "compact",
     what: "Serverless ingestion of vendor webhooks on AWS that does not lose, duplicate or reorder anything.",
     metric: "18 / 18", label: "invariants hold after a seeded load test",
     caveat: "Verified on an AWS emulator. Never deployed to real AWS.",
+    chart: {
+      type: "ticks", title: "Invariants checked after the load test", note: "3,502 requests sent, including duplicates and poison messages",
+      total: 18, passed: 18, text: "18 of 18 hold",
+    },
     tries: ["webhooks demo"],
   },
   {
-    repo: "lakehouse-cdc-streaming", prog: "cdc", kind: "none", group: "Data platforms",
+    repo: "mortgage-metrics-platform", prog: "metrics", kind: "none", tier: "more",
+    what: "Batch platform on public mortgage data, with metrics defined once for both people and AI agents.",
+    metric: "One definition", label: "per metric, for people and for AI agents over MCP",
+    caveat: "Runs on a laptop against DuckDB. Not deployed.",
+    tries: ["open mortgage-metrics-platform"],
+  },
+  {
+    repo: "lakehouse-cdc-streaming", prog: "cdc", kind: "none", tier: "more",
     what: "Change data capture from Postgres into Iceberg, with a harness that proves the lake still matches the source.",
     metric: "5 failure modes", label: "duplicates, reordering, schema change, deletes, crashes",
     caveat: "Runs locally with docker compose. Not deployed.",
     tries: ["open lakehouse-cdc-streaming"],
   },
   {
-    repo: "mortgage-metrics-platform", prog: "metrics", kind: "none", group: "Data platforms",
-    what: "Batch platform on public mortgage data, with metrics defined once for both people and AI agents.",
-    metric: "One definition", label: "per metric, for people and for AI agents over MCP",
-    caveat: "Runs on a laptop against DuckDB. Not deployed.",
-    tries: ["open mortgage-metrics-platform"],
+    repo: "agentic-docs-assistant", prog: "docs-agent", kind: "none", tier: "more",
+    what: "A support agent that answers from documentation and files a ticket only after a person approves it.",
+    metric: "Human in the loop", label: "the agent pauses, a person approves, it resumes",
+    caveat: "The Cloud Run deployment is a reference, not run.",
+    tries: ["open agentic-docs-assistant"],
   },
 ];
 
@@ -260,21 +331,62 @@ export const lab = {
   },
 };
 
-/* ── project cards ── */
-export function renderCards(target, runInShell) {
-  const groups = [...new Set(PROJECTS.map((p) => p.group))];
-  target.innerHTML = groups.map((group) => `
-    <h3 class="lab-group">${esc(group)}</h3>
-    <div class="lab-grid">
-      ${PROJECTS.filter((p) => p.group === group).map((p) => `
-        <article class="lab-card reveal">
-          <header><a href="${GITHUB}${p.repo}" target="_blank" rel="noopener">${esc(p.repo)}</a>${KIND[p.kind]}</header>
-          <p class="what">${esc(p.what)}</p>
-          <div class="metric">${esc(p.metric)}</div>
-          <div class="label">${esc(p.label)}</div>
-          <div class="caveat">${esc(p.caveat)}</div>
-          <div class="tries">${p.tries.map((t) => `<button data-c="${esc(t)}">❯ ${esc(t)}</button>`).join("")}</div>
-        </article>`).join("")}
-    </div>`).join("");
+/* ── the page: proof beside the name, then the projects ── */
+const tier = (name) => PROJECTS.filter((p) => p.tier === name);
+const tries = (p) => `<div class="tries">${p.tries.map((t) => `<button data-c="${esc(t)}">❯ ${esc(t)}</button>`).join("")}</div>`;
+const head = (p) => `<header><a href="${GITHUB}${p.repo}" target="_blank" rel="noopener">${esc(p.repo)}</a>${KIND[p.kind]}</header>`;
+const result = (p) => `<div class="metric">${esc(p.metric)}</div><div class="label">${esc(p.label)}</div><div class="caveat">${esc(p.caveat)}</div>`;
+
+export function renderProof(target) {
+  target.innerHTML = tier("big").map((p) => `
+    <a class="proof" href="#p-${p.repo}">
+      <span class="metric">${esc(p.metric)}</span>
+      <span class="label">${esc(p.label)}</span>
+      <span class="repo">${esc(p.repo)} ↓</span>
+    </a>`).join("");
+}
+
+function feature(p) {
+  const second = p.shot2 ? `<a class="shot-more" href="${p.shot2.src}" target="_blank" rel="noopener">Also: ${esc(p.shot2.text)} ↗</a>` : "";
+  return `
+  <article class="feature" id="p-${p.repo}">
+    <div class="f-text reveal">
+      ${head(p)}
+      <p class="what">${esc(p.what)}</p>
+      ${result(p)}
+      <ul class="story">${p.story.map((line) => `<li>${esc(line)}</li>`).join("")}</ul>
+      ${tries(p)}
+    </div>
+    <div class="f-media">
+      <a class="shot reveal" href="${p.shot.src}" target="_blank" rel="noopener" aria-label="Open the screenshot at full size">
+        <img src="${p.shot.src}" alt="${esc(p.shot.alt)}" width="${p.shot.w}" height="${p.shot.h}" loading="lazy" decoding="async" />
+      </a>
+      ${second}
+      ${chart(p.chart)}
+    </div>
+  </article>`;
+}
+
+const card = (p) => `
+  <article class="lab-card reveal" id="p-${p.repo}">
+    ${head(p)}
+    <p class="what">${esc(p.what)}</p>
+    ${result(p)}
+    ${chart(p.chart)}
+    ${tries(p)}
+  </article>`;
+
+const line = (p) => `
+  <a class="more-line reveal" id="p-${p.repo}" href="${GITHUB}${p.repo}" target="_blank" rel="noopener">
+    <b>${esc(p.repo)}</b><span>${esc(p.what)}</span><em>${esc(p.metric)}: ${esc(p.label)}</em>
+  </a>`;
+
+export function renderProjects(target, runInShell) {
+  target.innerHTML = `
+    ${tier("big").map(feature).join("")}
+    <div class="lab-grid">${tier("compact").map(card).join("")}</div>
+    <h3 class="lab-group">Also</h3>
+    <div class="more-list">${tier("more").map(line).join("")}</div>`;
   target.querySelectorAll("button[data-c]").forEach((b) => (b.onclick = () => runInShell(b.dataset.c)));
+  tooltips();
 }

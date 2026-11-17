@@ -2,9 +2,11 @@
 
 Interactive portfolio for **Linus Dominic Nathaniel** — Lead Data Engineer / Data Architect.
 
-The site renders a career **DAG**: every role and system is a node, every edge a real
-progression, with live particle flow along the pipeline. Built as a zero-dependency
-static site — no framework, no build step, no trackers.
+One page, in this order: a name and one sentence with three results beside them; the
+projects, each with its headline result, its caveat, a screenshot and a chart drawn from
+its results; a shell where a visitor can try the projects; experience as a timeline, with
+the same history as a draggable graph below it; tools; contact. A zero-dependency static
+site: no framework, no build step, no trackers.
 
 ## Stack
 
@@ -23,14 +25,14 @@ static site — no framework, no build step, no trackers.
   replay real output for the parts that need a database, AWS or a model. Every result says
   which it was and which commit the code came from. `/?run=callagent%20campaign` opens the
   page and runs a command.
-- **Career DAG** — draggable nodes, hover-to-highlight lineage, animated particle flow.
+- **Charts** — `charts.js` draws small bar charts from numbers copied out of each
+  project's results files. Values are printed beside every bar.
+- **Career graph** — below the timeline: draggable nodes, hover-to-highlight lineage.
   Auto-switches to a vertical layout below 720px.
-- **Hero ambient graph** — a slow, decorative miniature of the same idea (`#ambient`).
 - **Detail drawer** — click any node for the full run log.
 - **Résumé queries** — the same shell answers `whoami`, `select * from experience`,
   `marketplace`, `lead`.
 - **Command palette** — `⌘K` / `Ctrl+K` to jump anywhere.
-- **Boot sequence** — an Airflow-style DAG trigger on load.
 - Respects `prefers-reduced-motion`.
 
 ## Local dev

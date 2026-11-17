@@ -18,63 +18,62 @@
 <link rel="stylesheet" href="styles.css" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2305070a'/><path d='M30 30 L70 50 L30 70' stroke='%2300e5a0' stroke-width='4' fill='none' opacity='.55'/><circle cx='30' cy='30' r='9' fill='%233987e5'/><circle cx='30' cy='70' r='9' fill='%23199e70'/><circle cx='70' cy='50' r='9' fill='%2300e5a0'/></svg>" />
 </head>
-<body class="locked">
+<body>
+<a class="skip" href="#projects">Skip to the projects</a>
 
 <div class="grid-bg"></div>
 <div class="glow-bg"></div>
-
-<!-- ── boot ─────────────────────────────────────────────── -->
-<div id="boot">
-  <div class="boot-inner">
-    <div class="boot-line" id="bootLine"></div>
-    <div class="boot-bar"><i id="bootBar"></i></div>
-  </div>
-</div>
 
 <!-- ── nav ──────────────────────────────────────────────── -->
 <header class="nav">
   <div class="brand"><span class="dot"></span><b>linus.dominic</b><span>/nathaniel</span></div>
   <nav class="links">
-    <a href="#lab">lab</a>
-    <a href="#pipeline">pipeline</a>
-    <a href="#skills">stack</a>
+    <a href="#projects">projects</a>
+    <a href="#lab">try them</a>
+    <a href="#pipeline">experience</a>
     <a href="#contact">contact</a>
     <button class="kbd-hint" id="palBtn">⌘K</button>
   </nav>
 </header>
 
-<!-- ── hero ─────────────────────────────────────────────── -->
+<!-- ── hero: a name, one sentence, and proof ─────────────── -->
 <div class="hero">
  <div class="wrap hero-grid">
   <div class="hero-copy">
-    <div class="eyebrow">Lead Data Engineer · Data Architect · AI Engineering</div>
+    <div class="eyebrow">Lead Data Engineer · AI Engineering</div>
     <h1 class="name">Linus Dominic<br />Nathaniel</h1>
-    <div class="role-line"><span id="typed"></span><span class="cursor">&nbsp;</span></div>
     <p class="tagline" id="tagline"></p>
-    <p class="summary" id="summary"></p>
     <div class="cta-row">
       <a class="btn primary" href="#lab">❯ Test my projects</a>
-      <a class="btn" href="#pipeline">↓ Explore the pipeline</a>
       <a class="btn" id="cvBtn" href="linus-nathaniel-resume.pdf" download>⤓ Download CV</a>
-      <a class="btn" href="https://www.linkedin.com/in/linus-dominic/" target="_blank" rel="noopener">LinkedIn ↗</a>
-      <a class="btn" href="https://github.com/linusdominic" target="_blank" rel="noopener">GitHub ↗</a>
     </div>
-    <div class="stat-strip" id="stats"></div>
+    <p class="hero-links">
+      <a href="https://github.com/linusdominic" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/linus-dominic/" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="#contact">Contact</a>
+    </p>
   </div>
-  <div class="hero-visual">
-    <canvas id="ambient" aria-hidden="true"></canvas>
-    <span class="hv-cap">live pipeline · idle</span>
-  </div>
+  <div class="hero-proof" id="heroProof" aria-label="Three results, each from a project below"></div>
  </div>
 </div>
 
-<!-- ── lab ──────────────────────────────────────────────── -->
+<!-- ── projects ─────────────────────────────────────────── -->
+<section id="projects"><div class="wrap">
+  <div class="sec-head reveal">
+    <span class="tag">open source</span>
+    <h2>Projects</h2>
+  </div>
+  <p class="sec-sub reveal">Each one runs from a clone. Every number comes from a run on my machine, and each README lists what was not verified. The charts are drawn from the results files in the repositories.</p>
+  <div id="projectList"></div>
+</div></section>
+
+<!-- ── shell ────────────────────────────────────────────── -->
 <section id="lab"><div class="wrap">
   <div class="sec-head reveal">
     <span class="tag">try it</span>
-    <h2>Test my projects</h2>
+    <h2>Test them yourself</h2>
   </div>
-  <p class="sec-sub reveal">A shell over nine open-source projects. Two of them run their real code here, in your browser: type a sentence and see whether the calling agent would be allowed to say it, or paste a line with a phone number and watch it get masked. The parts that need a database, AWS or a model replay recorded runs, and every result says which it was.</p>
+  <p class="sec-sub reveal">A shell over the projects. Two of them run their real code here, in your browser: type a sentence and see whether the calling agent would be allowed to say it, or paste a line with a phone number and watch it get masked. The parts that need a database, AWS or a model replay recorded runs, and every result says which it was.</p>
   <div class="console reveal" id="query">
     <div class="console-bar">
       <i class="b" style="background:#ff5f57"></i><i class="b" style="background:#febc2e"></i><i class="b" style="background:#28c840"></i>
@@ -84,17 +83,19 @@
     <div class="console-in"><span>❯</span><input id="cIn" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Shell command" placeholder='callagent guard "You will get about 6.25% today."' /></div>
   </div>
   <div class="console-hints" id="cHints"></div>
-  <div id="labCards"></div>
 </div></section>
 
-<!-- ── DAG ──────────────────────────────────────────────── -->
+<!-- ── experience: the timeline first, the graph after ───── -->
 <section id="pipeline"><div class="wrap">
   <div class="sec-head reveal">
-    <span class="tag">dag · career_graph</span>
-    <h2>The pipeline</h2>
+    <span class="tag">experience</span>
+    <h2>Where I have worked</h2>
   </div>
-  <p class="sec-sub reveal">Every role and every system I've built, wired as a directed acyclic graph. Drag a node. Click one to read the run log. The particles only flow along edges that actually happened.</p>
+  <p class="sec-sub reveal"><b class="lead-line">I get systems that each think they own the customer to agree on one version of them.</b> <span id="summary"></span></p>
+  <div class="timeline" id="expList"></div>
 
+  <h3 class="lab-group">The same history as a graph</h3>
+  <p class="sec-sub reveal">Roles and the systems I built in them, wired by what led to what. Click a node for the detail.</p>
   <div class="dag-wrap reveal">
     <canvas id="dag"></canvas>
     <div class="dag-hud" id="legend"></div>
@@ -104,18 +105,15 @@
     </div>
     <div class="dag-note">drag nodes · click to inspect</div>
   </div>
-
-  <div class="timeline" id="expList"></div>
 </div></section>
 
-<!-- ── skills ───────────────────────────────────────────── -->
+<!-- ── what I work with ─────────────────────────────────── -->
 <section id="skills"><div class="wrap">
   <div class="sec-head reveal">
-    <span class="tag">information_schema</span>
-    <h2>The stack</h2>
+    <span class="tag">tools</span>
+    <h2>What I work with</h2>
   </div>
-  <p class="sec-sub reveal">What I reach for, grouped the way I actually think about it: architecture first, tools second.</p>
-  <div class="skill-grid" id="skillGrid"></div>
+  <dl class="skill-lines reveal" id="skillGrid"></dl>
 </div></section>
 
 <!-- ── contact ──────────────────────────────────────────── -->
@@ -160,16 +158,5 @@
 </div>
 
 <script type="module" src="app.js"></script>
-<script>
-  // Failsafe: if the module never loads (network hiccup, old browser), don't trap the visitor
-  // behind the boot overlay.
-  setTimeout(function () {
-    var b = document.getElementById("boot");
-    if (b && !b.classList.contains("done")) {
-      b.classList.add("done");
-      document.body.classList.remove("locked");
-    }
-  }, 5000);
-</script>
 </body>
 </html>

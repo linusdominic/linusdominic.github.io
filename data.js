@@ -13,15 +13,14 @@ export const PROFILE = {
   location: "Karachi, Pakistan",
   status: "Open to EU relocation (visa sponsorship required) and to EU-remote roles",
   tagline:
-    "I get systems that each think they own the customer to agree on one version of them.",
+    "Lead data engineer. I build data platforms and LLM agents, and I publish how each one was measured.",
   summary:
-    "Data engineer and architect with 6+ years building platforms on top of messy operational systems. I lead a team of 4 to 6 engineers at Altair Capital Group, where I own the data architecture, the AWS footprint the whole platform runs on, and every third-party integration we depend on. On my own time I build LLM agents in the open and publish how each one was measured. You can run two of them below.",
+    "Data engineer and architect with 6+ years building platforms on top of messy operational systems. I lead a team of 4 to 6 engineers at Altair Capital Group, where I own the data architecture, the AWS footprint the whole platform runs on, and every third-party integration we depend on.",
   stats: [
     { k: "years_experience", v: 6, suffix: "+" },
     { k: "records_modeled", v: 2, suffix: "M" },
     { k: "engineers_led", v: 6, suffix: "" },
     { k: "integrations", v: 8, suffix: "+" },
-    { k: "open_source_projects", v: 9, suffix: "" },
   ],
 };
 
