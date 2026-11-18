@@ -360,12 +360,13 @@ function table(rows, cols) {
 
 const CMDS = {
   help: () => w(`<span class="k">Try the projects:</span>
-  <span class="v">lab</span>               the nine projects and what runs here
+  <span class="v">lab</span>               the ten projects and what runs here
   <span class="v">callagent</span>         the calling agent's rules, live in your browser
   <span class="v">callqa</span>            the call grader's masking and scoring, live
   <span class="v">askwh</span>             recorded answers from the warehouse assistant
   <span class="v">reconkit demo</span>     recorded run of the table diff
   <span class="v">webhooks demo</span>     recorded run of the 18 invariants
+  <span class="v">platform selftest</span> recorded self-test of the Airflow platform template
   <span class="v">open &lt;project&gt;</span>    the result, the caveat and the link
 
 <span class="k">Query the résumé:</span>
@@ -505,7 +506,7 @@ inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { run(inp.value)
 $("#cHints").innerHTML = [...STARTERS, "whoami", "select * from experience", "help", "clear"]
   .map((h) => `<button data-c="${escapeHtml(h)}">${escapeHtml(h)}</button>`).join("");
 $$("#cHints button").forEach((b) => (b.onclick = () => { run(b.dataset.c); inp.focus(); }));
-w(`<span class="k">lab</span> ready · 9 projects. Two run their real code here, in your browser. Others replay recorded runs.
+w(`<span class="k">lab</span> ready · 10 projects. Two run their real code here, in your browser. Others replay recorded runs.
 <span class="k">career.db</span> connected · 5 roles, ${projs.length} projects, ${SKILLS.length} skill groups indexed.
 type <span class="v">lab</span> or click a command below. <span class="v">help</span> lists everything.`);
 const runInShell = (c) => {

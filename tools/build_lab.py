@@ -107,10 +107,11 @@ def main() -> None:
 
     recorded = {
         "reconkit": first_block(REPOS / "reconkit" / "README.md", "$ reconkit run"),
+        "platform": first_block(REPOS / "airflow-migration-template" / "README.md", "$ dp selftest"),
         "webhooks": first_block(REPOS / "serverless-webhook-ingestion" / "README.md", "$ make demo"),
         "warehouse": warehouse_questions(),
     }
-    for repo in ("reconkit", "serverless-webhook-ingestion", "ask-the-warehouse"):
+    for repo in ("reconkit", "serverless-webhook-ingestion", "ask-the-warehouse", "airflow-migration-template"):
         manifest[repo] = commit(repo)
     (LAB / "recorded.json").write_text(json.dumps(recorded, indent=1) + "\n")
     (LAB / "manifest.json").write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n")

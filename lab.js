@@ -104,6 +104,17 @@ export const PROJECTS = [
     tries: ["open vectorless-rag-benchmark"],
   },
   {
+    repo: "airflow-migration-template", prog: "platform", kind: "recorded", tier: "compact",
+    what: "A data platform template for moving legacy ETL jobs to Airflow. The same pipeline runs on DuckDB, PostgreSQL or Redshift.",
+    metric: "8 / 8", label: "self-test checks pass on DuckDB and on PostgreSQL",
+    caveat: "Redshift and cloud storage adapters were not run live.",
+    chart: {
+      type: "ticks", title: "Self-test checks in a fresh environment", note: "connections, the write path, the object store and every SQL template",
+      total: 8, passed: 8, text: "8 of 8 pass",
+    },
+    tries: ["platform selftest"],
+  },
+  {
     repo: "reconkit", prog: "reconkit", kind: "recorded", tier: "compact",
     what: "Diffs tables across databases by checksum bisection, so only the disagreeing key ranges are downloaded.",
     metric: "2,880 of 50,000", label: "rows downloaded to find every difference",
@@ -226,7 +237,7 @@ const project = (name) => PROJECTS.find((p) => p.repo === name || p.prog === nam
 
 function listing() {
   const rows = PROJECTS.map((p) => `  <span class="v">${p.prog.padEnd(11)}</span>${KIND[p.kind]}  ${esc(p.metric.padEnd(17))} ${esc(p.repo)}`);
-  return `<span class="k">Nine projects.</span> Type a program name to see what it can do here.
+  return `<span class="k">Ten projects.</span> Type a program name to see what it can do here.
 ${rows.join("\n")}
 
   <span class="lab-kind live">live</span>      the project's own Python, unmodified, running in your browser
@@ -283,6 +294,9 @@ const HANDLERS = {
   reconkit: (args, say) => args[0] === "demo"
     ? replay("reconkit", "reconkit", "It needs two databases, so it is replayed.", say)
     : say(describe(project("reconkit"))),
+  platform: (args, say) => args[0] === "selftest"
+    ? replay("platform", "airflow-migration-template", "It tests a warehouse and a file store, so it is replayed.", say)
+    : say(describe(project("platform"))),
   webhooks: (args, say) => args[0] === "demo"
     ? replay("webhooks", "serverless-webhook-ingestion", "It needs an AWS emulator, so it is replayed.", say)
     : say(describe(project("webhooks"))),

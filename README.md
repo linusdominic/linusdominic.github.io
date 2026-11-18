@@ -19,7 +19,7 @@ site: no framework, no build step, no trackers.
 
 ## Features
 
-- **Project lab** — a shell over nine open-source projects (`lab.js`). Commands marked
+- **Project lab** — a shell over ten open-source projects (`lab.js`). Commands marked
   *live* run the project's own Python, unmodified, in the visitor's browser (Pyodide,
   loaded from a CDN the first time a live command is used). Commands marked *recorded*
   replay real output for the parts that need a database, AWS or a model. Every result says
