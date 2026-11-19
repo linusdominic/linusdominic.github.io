@@ -184,10 +184,28 @@ export const PROJECTS = [
     tries: ["open open-lending-data"],
   },
   {
-    repo: "nosql-for-data-engineers", prog: "nosql", kind: "none", tier: "more",
-    what: "A hands-on NoSQL guide for data engineers who know SQL: five databases in Docker, labs and checked exercises.",
-    metric: "6 / 6", label: "source-to-lake reconciliations pass in the capstone",
-    caveat: "Single-node databases on one Mac. No cloud services.",
+    repo: "nosql-for-data-engineers", prog: "nosql", kind: "none", tier: "big",
+    what: "A course in NoSQL for data engineers who know SQL, with a local lesson studio wired to five real databases.",
+    metric: "48 exercises", label: "checked live against MongoDB, Redis, Cassandra, DynamoDB and Neo4j",
+    caveat: "Runs locally in Docker. Single-node databases, no cloud services.",
+    story: [
+      "make studio starts a local web app: the lesson on one side, a console on the other, connected to the databases running in Docker. Learners type mongosh, redis-cli, CQL, PartiQL, Cypher or DuckDB SQL and check each answer against the database itself.",
+      "Every exercise has hints and a reference answer. Integration tests run every reference answer and a set of wrong ones against the real databases on each push, so the checks cannot drift.",
+      "The capstone copies four of the stores into a Parquet lake and DuckDB marts, then reconciles: 6 of 6 checks pass, and a re-run and a backfill change nothing.",
+    ],
+    shot: { src: "assets/nosql-studio.jpg", w: 1400, h: 875, alt: "The lesson studio: a MongoDB exercise passed on the left, with the expected and actual results side by side, and the live console on the right" },
+    shot2: { src: "https://linusdominic.github.io/nosql-for-data-engineers/media/studio-demo.mp4", text: "the 3-minute demo video" },
+    chart: {
+      type: "single", title: "Checked exercises per chapter", note: "plus 13 quiz questions in chapters 1 and 8", max: 10,
+      rows: [
+        { label: "MongoDB", value: 10, text: "10" },
+        { label: "Cassandra", value: 9, text: "9" },
+        { label: "DynamoDB", value: 9, text: "9" },
+        { label: "Redis", value: 8, text: "8" },
+        { label: "Neo4j", value: 7, text: "7" },
+        { label: "Capstone (DuckDB)", value: 5, text: "5" },
+      ],
+    },
     tries: ["open nosql-for-data-engineers"],
   },
 ];
@@ -385,7 +403,8 @@ const head = (p) => `<header><a href="${GITHUB}${p.repo}" target="_blank" rel="n
 const result = (p) => `<div class="metric">${esc(p.metric)}</div><div class="label">${esc(p.label)}</div><div class="caveat">${esc(p.caveat)}</div>`;
 
 export function renderProof(target) {
-  target.innerHTML = tier("big").map((p) => `
+  // The three headline results only; later features are on the page, not in the hero.
+  target.innerHTML = tier("big").slice(0, 3).map((p) => `
     <a class="proof" href="#p-${p.repo}">
       <span class="metric">${esc(p.metric)}</span>
       <span class="label">${esc(p.label)}</span>
