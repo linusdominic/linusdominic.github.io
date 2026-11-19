@@ -140,6 +140,22 @@ export const PROJECTS = [
     tries: ["webhooks demo"],
   },
   {
+    repo: "pipeline-triage-bench", prog: "triage", kind: "none", tier: "compact",
+    what: "A benchmark for agents answering data-pipeline alerts: rerun, backfill, fix, escalate, or leave it alone.",
+    metric: "31 / 33", label: "incidents resolved by Claude Opus 5.5; best naive agent: 9",
+    caveat: "Simulated lender. One run per model.",
+    chart: {
+      type: "single", title: "Incidents resolved", note: "33 incidents on a simulated lender's platform, one run each", max: 33,
+      rows: [
+        { label: "Claude Opus 5.5", value: 31, text: "31 / 33", strong: true },
+        { label: "Claude Sonnet 5.5", value: 28, text: "28 / 33" },
+        { label: "Close every alert", value: 9, text: "9 / 33" },
+        { label: "Re-run everything", value: 5, text: "5 / 33" },
+      ],
+    },
+    tries: ["open pipeline-triage-bench"],
+  },
+  {
     repo: "mortgage-metrics-platform", prog: "metrics", kind: "none", tier: "more",
     what: "Batch platform on public mortgage data, with metrics defined once for both people and AI agents.",
     metric: "One definition", label: "per metric, for people and for AI agents over MCP",
@@ -159,6 +175,20 @@ export const PROJECTS = [
     metric: "Human in the loop", label: "the agent pauses, a person approves, it resumes",
     caveat: "The Cloud Run deployment is a reference, not run.",
     tries: ["open agentic-docs-assistant"],
+  },
+  {
+    repo: "open-lending-data", prog: "hmda", kind: "none", tier: "more",
+    what: "US mortgage public data on one schema: HMDA 2007-2025, joined to FDIC bank financials and CFPB complaints.",
+    metric: "325,140,977", label: "HMDA records, 19 years, row counts equal the raw files",
+    caveat: "Full build run on one Mac; 13 GB of Parquet released.",
+    tries: ["open open-lending-data"],
+  },
+  {
+    repo: "nosql-for-data-engineers", prog: "nosql", kind: "none", tier: "more",
+    what: "A hands-on NoSQL guide for data engineers who know SQL: five databases in Docker, labs and checked exercises.",
+    metric: "6 / 6", label: "source-to-lake reconciliations pass in the capstone",
+    caveat: "Single-node databases on one Mac. No cloud services.",
+    tries: ["open nosql-for-data-engineers"],
   },
 ];
 
@@ -237,7 +267,7 @@ const project = (name) => PROJECTS.find((p) => p.repo === name || p.prog === nam
 
 function listing() {
   const rows = PROJECTS.map((p) => `  <span class="v">${p.prog.padEnd(11)}</span>${KIND[p.kind]}  ${esc(p.metric.padEnd(17))} ${esc(p.repo)}`);
-  return `<span class="k">Ten projects.</span> Type a program name to see what it can do here.
+  return `<span class="k">Thirteen projects.</span> Type a program name to see what it can do here.
 ${rows.join("\n")}
 
   <span class="lab-kind live">live</span>      the project's own Python, unmodified, running in your browser
@@ -304,6 +334,9 @@ const HANDLERS = {
   "docs-agent": (args, say) => say(describe(project("docs-agent"))),
   cdc: (args, say) => say(describe(project("cdc"))),
   metrics: (args, say) => say(describe(project("metrics"))),
+  triage: (args, say) => say(describe(project("triage"))),
+  hmda: (args, say) => say(describe(project("hmda"))),
+  nosql: (args, say) => say(describe(project("nosql"))),
 };
 
 async function live(line, prog, say) {
