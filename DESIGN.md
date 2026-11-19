@@ -87,10 +87,49 @@ Licences are in `assets/fonts/OFL-*.txt`.
 
 ### Motion
 
-- Hero lines rise in once on load; tiles and charts fade up as they enter; bars grow.
-- The theme toggle crossfades with a view transition where supported.
-- The career graph animates only while it is on screen.
-- `prefers-reduced-motion` turns all of it off, including the graph's particles.
+The motion reads as an instrument: things are scanned in, read out and bracketed. It
+confirms what happened and never asks to be watched.
+
+- **Read-outs.** The hero name decodes from scrambled glyphs and settles left to right in
+  about half a second; the three headline figures count up from zero, padded to their final
+  width so nothing moves; each section heading decodes once, the first time it is on
+  screen. The real text stays in the element for screen readers (a visually hidden copy
+  beside an aria-hidden animated one), and the original nodes are put back when it ends.
+- **Scan.** Tiles, core-stack cards, screenshots and case charts get one sweep as they
+  fade in.
+- **Brackets.** Tiles, the headline results, core-stack cards and contact cards show four
+  corner brackets on hover and on keyboard focus.
+- **Chromatic settle.** On hover, a tile's name and figure, and the buttons, split into two
+  colours and resolve once, in under 0.3 s.
+- **The hero grid** drifts slowly, and now and then a pulse runs along one of its lines.
+  It pauses when the hero is off screen.
+- **The shell boots.** Its first lines type in the first time it scrolls into view, then a
+  cursor blinks four times, once a second. If the lines are already on screen at load,
+  they are left alone.
+- **Theme switch** is a scan wipe: the new theme is revealed top to bottom behind one
+  travelling line (a view transition, where supported).
+- **Signals.** Link underlines in the hero and the case studies draw from left to right;
+  the section nav's marker draws in; the reading-progress line glows in the dark theme.
+- **The career graph** animates only while it is on screen.
+
+Rules it keeps: transforms, opacity and clip-path only, plus a short filter on hover; a
+small script (`motion.js`) only for the text and the boot. Nothing repeats faster than
+once a second and nothing strobes. Text is readable from the first frame and exact within
+about 0.6 s. Nothing is hidden if a script fails. The motion colour is a cool instrument
+blue, never the green or amber that carry state; the dark theme gets the glow, the light
+theme stays flat. `prefers-reduced-motion: reduce` turns all of it off: no decode, no
+count, no scan, no boot, no wipe, no grid drift, no graph particles.
+
+### Toolkit marks
+
+Tools in the toolkit carry their brand mark, monochrome, in the theme's ink colour
+(`fill="currentColor"`), so the marks sit quietly in both themes and only identify the
+tool; the name is always the visible text. The marks are from
+[Simple Icons](https://simpleicons.org) 16.36.0 (CC0; five Apache marks are Apache-2.0),
+vendored as one sprite of the 28 that are used. Brands that are not in Simple Icons (the
+AWS and Microsoft marks were removed at their owners' request) get a monogram in Geist
+Mono instead; they are not recreated. Practices and patterns are dashed tags with no mark.
+Details and the full fallback list are in `assets/icons/README.md`.
 
 ### Accessibility
 

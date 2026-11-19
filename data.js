@@ -216,8 +216,6 @@ export const NODES = [
     layer: 4,
     kind: "project",
     period: "Altair Capital Group",
-    link: "https://superset.altaircapitalgroup.com/embed/psr-v2",
-    linkLabel: "View live dashboard →",
     tags: ["Superset", "Jinja", "MySQL", "CI/CD"],
     body: [
       "BI moved onto Apache Superset and became deployable from code: Python, Jinja-templated MySQL views and the Superset API.",
@@ -321,6 +319,87 @@ export const SKILLS = [
     icon: "▦",
     items: ["Apache Superset", "Power BI", "Grafana", "Kibana", "Streamlit"],
   },
+];
+
+// Marks beside the tools in SKILLS, matched by the item's exact text. Anything not listed
+// here (a practice, a pattern, a standard) is shown as a plain tag, without a mark.
+//   si:   a Simple Icons slug, drawn from assets/icons/simple-icons.svg in the text colour
+//   mono: a monogram, for a tool whose mark is not in Simple Icons (the AWS and Microsoft
+//         marks were removed at their owners' request; others were never in it)
+export const MARKS = {
+  "Apache Airflow": { si: "apacheairflow" },
+  "dbt": { mono: "dbt" },
+  "Prefect": { si: "prefect" },
+  "AWS Glue": { mono: "GL" },
+  "AWS Step Functions": { mono: "SF" },
+  "Apache Spark": { si: "apachespark" },
+  "PySpark": { si: "apachespark" },
+  "Pandas": { si: "pandas" },
+  "Apache Kafka": { si: "apachekafka" },
+  "Hadoop": { si: "apachehadoop" },
+  "Amazon Redshift": { mono: "RS" },
+  "Google BigQuery": { si: "googlebigquery" },
+  "Snowflake": { si: "snowflake" },
+  "AWS Athena": { mono: "AT" },
+  "Databricks": { si: "databricks" },
+  "EC2": { mono: "EC2" },
+  "S3": { mono: "S3" },
+  "RDS": { mono: "RDS" },
+  "Lambda": { mono: "LM" },
+  "API Gateway": { mono: "API" },
+  "Glue": { mono: "GL" },
+  "Athena": { mono: "AT" },
+  "Redshift": { mono: "RS" },
+  "Step Functions": { mono: "SF" },
+  "EventBridge": { mono: "EB" },
+  "CloudFront": { mono: "CF" },
+  "CloudWatch": { mono: "CW" },
+  "SNS": { mono: "SNS" },
+  "Secrets Manager": { mono: "SM" },
+  "SSM": { mono: "SSM" },
+  "IAM": { mono: "IAM" },
+  "ECS": { mono: "ECS" },
+  "Fargate": { mono: "FG" },
+  "Node.js": { si: "nodedotjs" },
+  "React 19": { si: "react" },
+  "TypeScript": { si: "typescript" },
+  "Cotality / CoreLogic": { mono: "CT" },
+  "Instant Merge": { mono: "IM" },
+  "LoanSafe": { mono: "LS" },
+  "ValueLink": { mono: "VL" },
+  "Zoho CRM & Mail": { si: "zoho" },
+  "Twilio": { mono: "TW" },
+  "Telnyx": { mono: "TX" },
+  "Square": { si: "square" },
+  "Terraform": { si: "terraform" },
+  "Docker": { si: "docker" },
+  "nginx": { si: "nginx" },
+  "GitHub Actions": { si: "githubactions" },
+  "MySQL": { si: "mysql" },
+  "MongoDB": { si: "mongodb" },
+  "Elasticsearch": { si: "elasticsearch" },
+  "Claude API": { si: "claude" },
+  "LangGraph": { si: "langgraph" },
+  "Apache Superset": { si: "apachesuperset" },
+  "Power BI": { mono: "PBI" },
+  "Grafana": { si: "grafana" },
+  "Kibana": { si: "kibana" },
+  "Streamlit": { si: "streamlit" },
+  // used only in CORE_STACK
+  "PostgreSQL": { si: "postgresql" },
+  "AWS": { mono: "AWS" },
+};
+
+// The row of larger cards above the groups: the tools behind most of the work.
+export const CORE_STACK = [
+  { name: "Apache Airflow", note: "orchestration" },
+  { name: "dbt", note: "transformation" },
+  { name: "Apache Spark", note: "processing" },
+  { name: "PostgreSQL", note: "system of record" },
+  { name: "AWS", note: "cloud" },
+  { name: "Terraform", note: "infrastructure" },
+  { name: "Docker", note: "containers" },
+  { name: "Apache Superset", note: "BI as code" },
 ];
 
 export const EDUCATION = {

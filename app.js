@@ -1,5 +1,6 @@
-import { PROFILE, NODES, EDGES, SKILLS, EDUCATION, TYPE_META } from "./data.js?v=20261120b";
-import { lab, renderProof, renderProjects, STARTERS, PROJECTS } from "./lab.js?v=20261120b";
+import { PROFILE, NODES, EDGES, SKILLS, MARKS, CORE_STACK, EDUCATION, TYPE_META } from "./data.js?v=20261120c";
+import { lab, renderProof, renderProjects, STARTERS, PROJECTS } from "./lab.js?v=20261120c";
+import { decode, countUp, onEnter, boot, pauseOffscreen } from "./motion.js?v=20261120c";
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -12,7 +13,6 @@ const byId = Object.fromEntries(NODES.map((n) => [n.id, n]));
 const roles = NODES.filter((n) => n.kind === "role");
 const projs = NODES.filter((n) => n.kind === "project");
 const current = NODES.find((n) => n.current);
-const DASHBOARD = "https://superset.altaircapitalgroup.com/embed/psr-v2";
 const HERO_TRY = 'callagent guard "You will get about 6.25% today."';
 
 /* ══════════════════ THEME ══════════════════ */
@@ -31,8 +31,14 @@ function setTheme(theme, save) {
     graphColors();
   };
   if (save) { try { localStorage.setItem("theme", theme); } catch {} }
-  if (document.startViewTransition && !reduced()) document.startViewTransition(apply);
-  else apply();
+  if (!document.startViewTransition || reduced()) return apply();
+  // A scan wipe: the new theme is revealed top to bottom behind one travelling line.
+  const scan = document.createElement("div");
+  scan.className = "theme-scan";
+  scan.setAttribute("aria-hidden", "true");
+  root.classList.add("vt-scan");
+  const vt = document.startViewTransition(() => { document.body.append(scan); apply(); });
+  vt.finished.finally(() => { scan.remove(); root.classList.remove("vt-scan"); });
 }
 themeBtn.onclick = () => setTheme(root.dataset.theme === "dark" ? "light" : "dark", true);
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
@@ -473,8 +479,35 @@ $("#expList").innerHTML = roles.slice().reverse().map((n) => `
   </li>`).join("");
 $$(".tl-item button").forEach((b) => (b.onclick = () => openDrawer(byId[b.dataset.id], b)));
 
-$("#skillGrid").innerHTML = SKILLS.map((s) => `
-  <div class="skill"><dt>${esc(s.group)}<span>${s.items.length}</span></dt><dd>${s.items.map((i) => `<span>${esc(i)}</span>`).join(" ")}</dd></div>`).join("");
+// Tools carry a monochrome mark in the text colour; practices and patterns are plain tags.
+// The name is always the visible text and every mark is aria-hidden.
+const mark = (name) => {
+  const m = MARKS[name];
+  if (!m) return "";
+  return m.si
+    ? `<svg class="mk" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><use href="#si-${m.si}"/></svg>`
+    : `<span class="mk mk-mono" data-len="${m.mono.length}" aria-hidden="true">${esc(m.mono)}</span>`;
+};
+$("#kitCore").innerHTML = CORE_STACK.map((c) => `
+  <li class="core-card reveal scan hud">${mark(c.name)}<span class="core-name">${esc(c.name)}</span><span class="core-note">${esc(c.note)}</span></li>`).join("");
+$("#skillGrid").innerHTML = SKILLS.map((s, i) => `
+  <div class="kit-row reveal"><dt><span class="kit-idx" aria-hidden="true">${String(i + 1).padStart(2, "0")}</span><span class="kit-name">${esc(s.group)}</span><span class="kit-n" aria-hidden="true">${s.items.length}</span></dt>
+  <dd><ul class="kit-items">${s.items.map((it) => MARKS[it]
+    ? `<li class="tool">${mark(it)}<span>${esc(it)}</span></li>`
+    : `<li class="tag">${esc(it)}</li>`).join("")}</ul></dd></div>`).join("");
+// One sprite holding only the marks used, fetched once and inlined so <use> follows
+// currentColor. If it does not load, every name is still there.
+fetch("assets/icons/simple-icons.svg?v=20261120c")
+  .then((r) => (r.ok ? r.text() : ""))
+  .then((svg) => {
+    if (!svg) return;
+    const box = document.createElement("div");
+    box.className = "sprite";
+    box.setAttribute("aria-hidden", "true");
+    box.innerHTML = svg;
+    document.body.prepend(box);
+  })
+  .catch(() => {});
 
 $("#edu").innerHTML = `
   <div><h3>Education</h3><p><b>${esc(EDUCATION.degree)}</b></p><p>${esc(EDUCATION.school)}</p><p class="mono">${esc(EDUCATION.period)}</p></div>
@@ -487,14 +520,13 @@ $("#contactGrid").innerHTML = [
   ["phone", PROFILE.phone, `tel:${PROFILE.phone.replace(/\s/g, "")}`],
   ["linkedin", "in/linus-dominic", PROFILE.linkedin],
   ["github", "@linusdominic", PROFILE.github],
-  ["live dashboard", "superset.altaircapitalgroup.com", DASHBOARD],
   ["cv", "linus-nathaniel-resume.pdf", "linus-nathaniel-resume.pdf"],
   ["location", PROFILE.location, ""],
 ].map(([l, v, h]) => {
   if (!h) return `<div class="contact-card"><span class="l">${l}</span><span class="v">${esc(v)}</span></div>`;
   const ext = /^https?:/.test(h);
   const attrs = l === "cv" ? "download" : ext ? `target="_blank" rel="noopener"` : "";
-  return `<a class="contact-card" href="${h}" ${attrs}><span class="l">${l}</span><span class="v">${esc(v)}</span><span class="go" aria-hidden="true">${l === "cv" ? "↓" : ext ? "↗" : "→"}</span></a>`;
+  return `<a class="contact-card hud" href="${h}" ${attrs}><span class="l">${l}</span><span class="v">${esc(v)}</span><span class="go" aria-hidden="true">${l === "cv" ? "↓" : ext ? "↗" : "→"}</span></a>`;
 }).join("");
 
 /* ══════════════════ CONSOLE ══════════════════ */
@@ -686,9 +718,11 @@ $("#cHints").innerHTML = HINTS.map((g) => `
   </div>`).join("");
 $$("#cHints button").forEach((b) => (b.onclick = () => { run(b.dataset.c); inp.focus({ preventScroll: true }); }));
 
-w(`<span class="k">lab</span> ready · 13 projects. Two run their real code here, in your browser. Others replay recorded runs.
-<span class="k">career.db</span> connected · 5 roles, ${projs.length} projects, ${SKILLS.length} skill groups indexed.
-type <span class="v">lab</span> or click a command. <span class="v">help</span> lists everything.`);
+// One line per span, so the boot can type them in one after another.
+w(`<span class="bl"><span class="k">lab</span> ready · 13 projects. Two run their real code here, in your browser. Others replay recorded runs.</span>`
+  + `<span class="bl"><span class="k">career.db</span> connected · 5 roles, ${projs.length} projects, ${SKILLS.length} skill groups indexed.</span>`
+  + `<span class="bl">type <span class="v">lab</span> or click a command. <span class="v">help</span> lists everything.</span>`, "boot");
+boot(out.firstElementChild);
 
 document.addEventListener("lab:python", (e) => {
   const s = $("#pyStatus");
@@ -723,7 +757,6 @@ const PAL = [
   { t: "Download CV", s: "action", go: () => $("#cvBtn").click() },
   { t: "LinkedIn", s: "link", go: () => open(PROFILE.linkedin, "_blank", "noopener") },
   { t: "GitHub", s: "link", go: () => open(PROFILE.github, "_blank", "noopener") },
-  { t: "Live Superset dashboard", s: "link", go: () => open(DASHBOARD, "_blank", "noopener") },
 ];
 const pal = $("#palette"), palInput = $("#palInput"), palList = $("#palList");
 let palSel = 0, palRes = PAL, palReturn = null;
@@ -802,3 +835,12 @@ const io = new IntersectionObserver((es) => es.forEach((en) => {
   if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
 }), { threshold: 0.08, rootMargin: "0px 0px -6% 0px" });
 $$(".reveal").forEach((el) => io.observe(el));
+
+/* ══════════════════ MOTION: decode, count up, pause ══════════════════ */
+// The hero name decodes and the three headline figures count up on load; each section
+// heading decodes the first time it is on screen. All of it is skipped under reduced motion.
+decode($("#heroName"), { duration: 480 });
+$$("#heroProof .ro-metric").forEach((el, i) => countUp(el, { duration: 440, delay: 80 + i * 40 }));
+onEnter($$(".sec-head h2"), (el) => decode(el, { duration: 400 }));
+$$("#heroProof .ro-row").forEach((el) => el.classList.add("hud"));
+pauseOffscreen($(".hero"));

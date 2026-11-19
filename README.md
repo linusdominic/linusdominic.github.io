@@ -17,13 +17,14 @@ Design rationale and the research behind it are in [`DESIGN.md`](DESIGN.md).
 | --- | --- |
 | `index.html` | The page skeleton: landmarks, section headings, drawer, palette. |
 | `styles.css` | Design tokens for both themes, then every component. |
-| `data.js` | Profile, roles, systems, edges, skills, education, graph colours. |
+| `data.js` | Profile, roles, systems, edges, skills and their marks, the core stack, education, graph colours. |
 | `lab.js` | `PROJECTS` (the thirteen projects), the shell's project commands, and the hero results, overview grid and case studies. |
 | `charts.js` | Small bar and tick charts drawn from each project's results files. |
 | `app.js` | Theme, hero copy, career graph, drawer, timeline, toolkit, contact, the shell's résumé queries, palette, scroll progress and section highlighting. |
+| `motion.js` | The scripted part of the motion layer: text that decodes, figures that count up, the shell's boot. |
 | `lab/` | The Python bundle (`py.zip`), recorded runs and commit manifest. |
-| `tools/` | `build_lab.py`, `check_lab.py`, `labmain.py`. |
-| `assets/` | Screenshots, and `fonts/` with the OFL licences. |
+| `tools/` | `build_lab.py`, `check_lab.py`, `labmain.py`, `build_icons.py`. |
+| `assets/` | Screenshots, `fonts/` with the OFL licences, and `icons/` (the toolkit's mark sprite, with its source and licence). |
 
 ## Stack
 
@@ -75,11 +76,22 @@ Text contrast passes WCAG AA in both themes.
   `tables`, `marketplace`, `lead`, `infra`, `integrations`, `contact`.
 - **Command palette**: `⌘K` / `Ctrl+K` (or the search button) to jump to any section,
   project, role or system, run a command, switch theme or download the CV.
+- **Toolkit**: a core-stack row of eight larger cards, then every group as a row of a spec
+  sheet. Tools carry a monochrome brand mark from Simple Icons in the theme's ink colour
+  (about 47 KB as one sprite, 20 KB gzipped, fetched once and inlined); brands without a
+  mark get a monogram; practices are dashed tags. Source, licence and the fallback list
+  are in `assets/icons/README.md`.
+- **Motion layer**: the hero name and section headings decode from scrambled glyphs, the
+  headline figures count up, cards get a scan sweep as they appear and corner brackets on
+  hover and focus, tiles and buttons settle from a brief colour split on hover, the hero
+  grid drifts with occasional pulses, the shell boots, the theme switch is a scan wipe,
+  and link underlines draw like a signal trace. See `DESIGN.md` for the rules it keeps.
 - **Navigation**: a sticky top bar with the five sections, the current one highlighted,
   and a reading-progress line.
 - **Accessibility**: skip link, landmarks, visible focus, modal dialogs that keep and
-  return focus, alt text on every screenshot, `prefers-reduced-motion` respected
-  (no entrance motion, no graph animation).
+  return focus, alt text on every screenshot, brand marks aria-hidden beside their names,
+  real text kept for screen readers while a heading decodes, and `prefers-reduced-motion`
+  respected (no motion layer, no entrance motion, no graph animation).
 
 ## Local dev
 
@@ -93,9 +105,10 @@ python3 -m http.server 8000
 Push to `main`. GitHub Pages serves from `main` / root: **Settings → Pages → Source: Deploy from a branch**.
 
 GitHub Pages lets browsers cache files for ten minutes, so the stylesheet and the scripts are
-loaded with a version query (`styles.css?v=20261120b`, and the same on `app.js` and its imports
-of `data.js`, `lab.js` and `charts.js`). Change that date in `index.html`, `app.js` and `lab.js`
-whenever one of those files changes, or returning visitors may get new HTML with old CSS.
+loaded with a version query (`styles.css?v=20261120c`, and the same on `app.js` and its imports
+of `data.js`, `lab.js`, `motion.js` and `charts.js`, and on the icon sprite). Change that date in
+`index.html`, `app.js` and `lab.js` whenever one of those files changes, or returning visitors may
+get new HTML with old CSS.
 
 ## Rebuilding the lab
 

@@ -10,7 +10,7 @@
 //  House style: no em-dashes, no bold inside body copy.
 // ─────────────────────────────────────────────────────────────
 
-import { chart, tooltips } from "./charts.js?v=20261120b";
+import { chart, tooltips } from "./charts.js?v=20261120c";
 
 const PYODIDE = "https://cdn.jsdelivr.net/pyodide/v0.29.5/full/";
 const GITHUB = "https://github.com/linusdominic/";
@@ -439,7 +439,7 @@ const index = (p) => `P-${pad(ORDER.indexOf(p) + 1)}`;
 const top = (p) => `<div class="tile-top"><span class="tile-idx">${index(p)}</span>${KIND[p.kind]}</div>`;
 
 const featureTile = (p) => `
-  <article class="tile tile-feature reveal">
+  <article class="tile tile-feature reveal scan hud">
     ${top(p)}
     <div class="tile-head">
       <h3 class="tile-name"><a class="stretch" href="#p-${p.repo}">${esc(p.repo)}</a></h3>
@@ -453,7 +453,7 @@ const featureTile = (p) => `
   </article>`;
 
 const compactTile = (p) => `
-  <article class="tile tile-compact reveal" id="p-${p.repo}">
+  <article class="tile tile-compact reveal scan hud" id="p-${p.repo}">
     ${top(p)}
     <h3 class="tile-name"><a href="${link(p)}" target="_blank" rel="noopener">${esc(p.repo)} <span aria-hidden="true">↗</span></a></h3>
     <p class="tile-what">${esc(p.what)}</p>
@@ -465,7 +465,7 @@ const compactTile = (p) => `
   </article>`;
 
 const smallTile = (p) => `
-  <article class="tile tile-small reveal" id="p-${p.repo}">
+  <article class="tile tile-small reveal scan hud" id="p-${p.repo}">
     ${top(p)}
     <h3 class="tile-name"><a class="stretch" href="${link(p)}" target="_blank" rel="noopener">${esc(p.repo)} <span aria-hidden="true">↗</span></a></h3>
     <p class="tile-what">${esc(p.what)}</p>
@@ -477,7 +477,7 @@ const smallTile = (p) => `
 const liveTile = () => {
   const cmds = ['callagent guard "You will get about 6.25% today."', 'callqa mask "My social is 512-44-7166, call me on 555-0142"'];
   return `
-  <aside class="tile tile-cta reveal" aria-label="Try a project live">
+  <aside class="tile tile-cta reveal scan hud" aria-label="Try a project live">
     <p class="tile-idx">Try it live</p>
     <p class="cta-title">Two of these run their real Python in your browser.</p>
     <ul class="cta-progs">
@@ -508,7 +508,7 @@ function caseStudy(p, i) {
       <p class="case-links"><a href="${link(p)}" target="_blank" rel="noopener">Code on GitHub <span aria-hidden="true">↗</span></a>${second}</p>
     </div>
     <div class="case-media">
-      <figure class="shot reveal">
+      <figure class="shot reveal scan">
         <div class="shot-bar" aria-hidden="true"><i></i><i></i><i></i><span>${esc(p.repo)}</span></div>
         <a href="${p.shot.src}" target="_blank" rel="noopener" aria-label="Open the screenshot at full size">
           <img src="${p.shot.src}" alt="${esc(p.shot.alt)}" width="${p.shot.w}" height="${p.shot.h}" loading="lazy" decoding="async" />
