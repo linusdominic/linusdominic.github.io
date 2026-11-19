@@ -2,9 +2,10 @@
 //  CHARTS · small bar charts built from the projects' own results.
 //
 //  Every number here is copied from a results file in the project's repository.
-//  Two series use the site's blue and orange. A single series is blue. Mint is
-//  kept for "passed", which is a state, not a series. Values are always printed
-//  beside the bar, so no reading depends on colour or on hovering.
+//  The result is cobalt and the comparison is stone (--chart-a, --chart-b), so the
+//  two differ in lightness as well as hue in both themes. A single series is cobalt.
+//  Green is kept for "passed", which is a state, not a series. Values are always
+//  printed beside the bar, so no reading depends on colour or on hovering.
 // ─────────────────────────────────────────────────────────────
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));

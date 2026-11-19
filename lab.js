@@ -10,7 +10,7 @@
 //  House style: no em-dashes, no bold inside body copy.
 // ─────────────────────────────────────────────────────────────
 
-import { chart, tooltips } from "./charts.js";
+import { chart, tooltips } from "./charts.js?v=20261120b";
 
 const PYODIDE = "https://cdn.jsdelivr.net/pyodide/v0.29.5/full/";
 const GITHUB = "https://github.com/linusdominic/";
@@ -260,23 +260,31 @@ function loadScript(src) {
   });
 }
 
+// The page listens for this to show the runtime's state beside the shell.
+const status = (state, text) => document.dispatchEvent(new CustomEvent("lab:python", { detail: { state, text } }));
+
 function python(say) {
   if (runtime) return runtime;
   runtime = (async () => {
     say('<span class="dim">starting Python in your browser. About 13 MB, the first time only…</span>');
+    status("loading", "python loading · about 13 MB, first time only");
     const started = performance.now();
     await loadScript(PYODIDE + "pyodide.js");
-    const py = await window.loadPyodide({ indexURL: PYODIDE });
-    await py.loadPackage(["pyyaml", "sqlite3", "tzdata"]);
+    const quiet = () => {};
+    const py = await window.loadPyodide({ indexURL: PYODIDE, stdout: quiet, stderr: quiet });
+    await py.loadPackage(["pyyaml", "sqlite3", "tzdata"], { messageCallback: quiet, errorCallback: quiet });
     const bundle = await (await fetch("lab/py.zip")).arrayBuffer();
     py.FS.mkdirTree("/lab");
     py.unpackArchive(bundle, "zip", { extractDir: "/lab" });
     py.runPython("import sys\nsys.path.insert(0, '/lab')\nimport labmain");
     const run = py.globals.get("labmain").run;
-    say(`<span class="dim">ready in ${((performance.now() - started) / 1000).toFixed(1)} s. Python ${py.runPython("sys.version.split()[0]")}, WebAssembly.</span>`);
+    const version = py.runPython("sys.version.split()[0]");
+    const secs = ((performance.now() - started) / 1000).toFixed(1);
+    say(`<span class="dim">ready in ${secs} s. Python ${version}, WebAssembly.</span>`);
+    status("ready", `python ${version} · running in your browser`);
     return (line) => run(line);
   })();
-  runtime.catch(() => { runtime = null; });
+  runtime.catch(() => { runtime = null; status("error", "python could not start here"); });
   return runtime;
 }
 
@@ -396,63 +404,129 @@ export const lab = {
   },
 };
 
-/* ── the page: proof beside the name, then the projects ── */
+
+/* ── the page: three results in the hero, an overview grid, then four cases ── */
 const tier = (name) => PROJECTS.filter((p) => p.tier === name);
-const tries = (p) => `<div class="tries">${p.tries.map((t) => `<button data-c="${esc(t)}">❯ ${esc(t)}</button>`).join("")}</div>`;
-const head = (p) => `<header><a href="${GITHUB}${p.repo}" target="_blank" rel="noopener">${esc(p.repo)}</a>${KIND[p.kind]}</header>`;
-const result = (p) => `<div class="metric">${esc(p.metric)}</div><div class="label">${esc(p.label)}</div><div class="caveat">${esc(p.caveat)}</div>`;
+const pad = (n) => String(n).padStart(2, "0");
+const link = (p) => `${GITHUB}${p.repo}`;
+const caveat = (p, cls = "caveat") => `<p class="${cls}"><span class="sr-only">Caveat: </span>${esc(p.caveat)}</p>`;
+const tries = (p) => `<div class="tries">${p.tries.map((t) => `
+  <button type="button" data-c="${esc(t)}"><span class="tri-p" aria-hidden="true">❯</span><code>${esc(t)}</code><span class="tri-run" aria-hidden="true">run</span></button>`).join("")}</div>`;
+// "199 / 200" reads as a share; anything else draws no meter.
+const share = (metric) => {
+  const m = metric.match(/^([\d,]+)\s*\/\s*([\d,]+)$/);
+  return m ? (100 * +m[1].replace(/,/g, "")) / +m[2].replace(/,/g, "") : null;
+};
 
 export function renderProof(target) {
   // The three headline results only; later features are on the page, not in the hero.
-  target.innerHTML = tier("big").slice(0, 3).map((p) => `
-    <a class="proof" href="#p-${p.repo}">
-      <span class="metric">${esc(p.metric)}</span>
-      <span class="label">${esc(p.label)}</span>
-      <span class="repo">${esc(p.repo)} ↓</span>
-    </a>`).join("");
+  target.innerHTML = tier("big").slice(0, 3).map((p) => {
+    const v = share(p.metric);
+    return `
+    <a class="ro-row" href="#p-${p.repo}">
+      <span class="ro-metric">${esc(p.metric)}</span>
+      ${v === null ? "" : `<span class="ro-meter" aria-hidden="true"><i style="--v:${v.toFixed(1)}%"></i></span>`}
+      <span class="ro-label">${esc(p.label)}</span>
+      ${caveat(p, "ro-caveat")}
+      <span class="ro-repo">${esc(p.repo)} <span aria-hidden="true">↓</span></span>
+    </a>`;
+  }).join("");
 }
 
-function feature(p) {
-  const second = p.shot2 ? `<a class="shot-more" href="${p.shot2.src}" target="_blank" rel="noopener">Also: ${esc(p.shot2.text)} ↗</a>` : "";
-  return `
-  <article class="feature" id="p-${p.repo}">
-    <div class="f-text reveal">
-      ${head(p)}
-      <p class="what">${esc(p.what)}</p>
-      ${result(p)}
-      <ul class="story">${p.story.map((line) => `<li>${esc(line)}</li>`).join("")}</ul>
-      ${tries(p)}
+// Order on the page: the four featured, the five with a chart, then the four others.
+const ORDER = [...tier("big"), ...tier("compact"), ...tier("more")];
+const index = (p) => `P-${pad(ORDER.indexOf(p) + 1)}`;
+const top = (p) => `<div class="tile-top"><span class="tile-idx">${index(p)}</span>${KIND[p.kind]}</div>`;
+
+const featureTile = (p) => `
+  <article class="tile tile-feature reveal">
+    ${top(p)}
+    <div class="tile-head">
+      <h3 class="tile-name"><a class="stretch" href="#p-${p.repo}">${esc(p.repo)}</a></h3>
+      <span class="tile-more" aria-hidden="true">case study ↓</span>
     </div>
-    <div class="f-media">
-      <a class="shot reveal" href="${p.shot.src}" target="_blank" rel="noopener" aria-label="Open the screenshot at full size">
-        <img src="${p.shot.src}" alt="${esc(p.shot.alt)}" width="${p.shot.w}" height="${p.shot.h}" loading="lazy" decoding="async" />
-      </a>
-      ${second}
+    <p class="tile-what">${esc(p.what)}</p>
+    <p class="tile-metric">${esc(p.metric)}</p>
+    <p class="tile-label">${esc(p.label)}</p>
+    ${caveat(p)}
+    <div class="tile-thumb"><img src="${p.shot.src}" alt="" width="${p.shot.w}" height="${p.shot.h}" loading="lazy" decoding="async" /></div>
+  </article>`;
+
+const compactTile = (p) => `
+  <article class="tile tile-compact reveal" id="p-${p.repo}">
+    ${top(p)}
+    <h3 class="tile-name"><a href="${link(p)}" target="_blank" rel="noopener">${esc(p.repo)} <span aria-hidden="true">↗</span></a></h3>
+    <p class="tile-what">${esc(p.what)}</p>
+    <p class="tile-metric">${esc(p.metric)}</p>
+    <p class="tile-label">${esc(p.label)}</p>
+    ${caveat(p)}
+    ${chart(p.chart)}
+    ${tries(p)}
+  </article>`;
+
+const smallTile = (p) => `
+  <article class="tile tile-small reveal" id="p-${p.repo}">
+    ${top(p)}
+    <h3 class="tile-name"><a class="stretch" href="${link(p)}" target="_blank" rel="noopener">${esc(p.repo)} <span aria-hidden="true">↗</span></a></h3>
+    <p class="tile-what">${esc(p.what)}</p>
+    <p class="tile-metric">${esc(p.metric)}</p>
+    <p class="tile-label">${esc(p.label)}</p>
+    ${caveat(p)}
+  </article>`;
+
+const liveTile = () => {
+  const cmds = ['callagent guard "You will get about 6.25% today."', 'callqa mask "My social is 512-44-7166, call me on 555-0142"'];
+  return `
+  <aside class="tile tile-cta reveal" aria-label="Try a project live">
+    <p class="tile-idx">Try it live</p>
+    <p class="cta-title">Two of these run their real Python in your browser.</p>
+    <ul class="cta-progs">
+      <li><code>callagent</code><span>the calling agent's rules</span></li>
+      <li><code>callqa</code><span>the call grader's masking and scoring</span></li>
+    </ul>
+    <p class="cta-sub">The rest replay recorded runs, and every result says which it was.</p>
+    <div class="cta-cmds">${cmds.map((c) => `<button type="button" class="cta-cmd" data-c="${esc(c)}"><span aria-hidden="true">❯</span><code>${esc(c)}</code></button>`).join("")}</div>
+    <a class="cta-link" href="#lab">Open the shell <span aria-hidden="true">↓</span></a>
+  </aside>`;
+};
+
+function caseStudy(p, i) {
+  const second = p.shot2 ? `<a href="${p.shot2.src}" target="_blank" rel="noopener">Also: ${esc(p.shot2.text)} <span aria-hidden="true">↗</span></a>` : "";
+  return `
+  <article class="case" id="p-${p.repo}">
+    <div class="case-text reveal">
+      <div class="tile-top"><span class="tile-idx">Case ${pad(i + 1)} · ${index(p)}</span>${KIND[p.kind]}</div>
+      <h4 class="case-name">${esc(p.repo)}</h4>
+      <p class="case-what">${esc(p.what)}</p>
+      <dl class="case-readout">
+        <div class="ro-result"><dt>Result</dt><dd><span class="metric">${esc(p.metric)}</span><span class="label">${esc(p.label)}</span></dd></div>
+        <div class="ro-cav"><dt>Caveat</dt><dd>${esc(p.caveat)}</dd></div>
+      </dl>
+      <ol class="story">${p.story.map((line) => `<li>${esc(line)}</li>`).join("")}</ol>
+      <p class="tries-title">Run it here</p>
+      ${tries(p)}
+      <p class="case-links"><a href="${link(p)}" target="_blank" rel="noopener">Code on GitHub <span aria-hidden="true">↗</span></a>${second}</p>
+    </div>
+    <div class="case-media">
+      <figure class="shot reveal">
+        <div class="shot-bar" aria-hidden="true"><i></i><i></i><i></i><span>${esc(p.repo)}</span></div>
+        <a href="${p.shot.src}" target="_blank" rel="noopener" aria-label="Open the screenshot at full size">
+          <img src="${p.shot.src}" alt="${esc(p.shot.alt)}" width="${p.shot.w}" height="${p.shot.h}" loading="lazy" decoding="async" />
+        </a>
+      </figure>
       ${chart(p.chart)}
     </div>
   </article>`;
 }
 
-const card = (p) => `
-  <article class="lab-card reveal" id="p-${p.repo}">
-    ${head(p)}
-    <p class="what">${esc(p.what)}</p>
-    ${result(p)}
-    ${chart(p.chart)}
-    ${tries(p)}
-  </article>`;
-
-const line = (p) => `
-  <a class="more-line reveal" id="p-${p.repo}" href="${GITHUB}${p.repo}" target="_blank" rel="noopener">
-    <b>${esc(p.repo)}</b><span>${esc(p.what)}</span><em>${esc(p.metric)}: ${esc(p.label)}</em>
-  </a>`;
-
-export function renderProjects(target, runInShell) {
-  target.innerHTML = `
-    ${tier("big").map(feature).join("")}
-    <div class="lab-grid">${tier("compact").map(card).join("")}</div>
-    <h3 class="lab-group">Also</h3>
-    <div class="more-list">${tier("more").map(line).join("")}</div>`;
-  target.querySelectorAll("button[data-c]").forEach((b) => (b.onclick = () => runInShell(b.dataset.c)));
+export function renderProjects(grid, cases, runInShell) {
+  grid.innerHTML =
+    tier("big").map(featureTile).join("") +
+    tier("compact").map(compactTile).join("") +
+    liveTile() +
+    tier("more").map(smallTile).join("");
+  cases.innerHTML = tier("big").map(caseStudy).join("");
+  [grid, cases].forEach((root) =>
+    root.querySelectorAll("button[data-c]").forEach((b) => (b.onclick = () => runInShell(b.dataset.c))));
   tooltips();
 }

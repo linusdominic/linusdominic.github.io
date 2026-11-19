@@ -6,139 +6,224 @@
 <title>Linus Dominic Nathaniel · Lead Data Engineer · AI Engineering</title>
 <meta name="description" content="Lead data engineer and data architect who builds and measures LLM agents. Try thirteen open-source projects in a shell: two run their real Python in your browser." />
 <meta name="author" content="Linus Dominic Nathaniel" />
-<meta name="theme-color" content="#05070a" />
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#f3f1ea" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0e0f11" media="(prefers-color-scheme: dark)" />
 
 <meta property="og:type" content="website" />
 <meta property="og:title" content="Linus Dominic Nathaniel · Lead Data Engineer · AI Engineering" />
 <meta property="og:description" content="Thirteen open-source projects you can try in a shell. Two run their real Python in your browser." />
 
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="styles.css" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2305070a'/><path d='M30 30 L70 50 L30 70' stroke='%2300e5a0' stroke-width='4' fill='none' opacity='.55'/><circle cx='30' cy='30' r='9' fill='%233987e5'/><circle cx='30' cy='70' r='9' fill='%23199e70'/><circle cx='70' cy='50' r='9' fill='%2300e5a0'/></svg>" />
+<!-- Theme before first paint: a saved choice, otherwise the system setting. -->
+<script>
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem("theme"); } catch (e) {}
+    if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    document.documentElement.dataset.theme = t;
+  })();
+</script>
+
+<link rel="preload" href="assets/fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="assets/fonts/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="styles.css?v=20261120b" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%2316161a'/><path d='M28 68V32M28 68h22M58 68V32h8a18 18 0 0 1 0 36z' stroke='%23f3f1ea' stroke-width='7' fill='none' stroke-linecap='round' stroke-linejoin='round'/><circle cx='80' cy='24' r='7' fill='%234ade9b'/></svg>" />
 </head>
 <body>
-<a class="skip" href="#projects">Skip to the projects</a>
+<a class="skip" href="#main">Skip to content</a>
 
-<div class="grid-bg"></div>
-<div class="glow-bg"></div>
-
-<!-- ── nav ──────────────────────────────────────────────── -->
-<header class="nav">
-  <div class="brand"><span class="dot"></span><b>linus.dominic</b><span>/nathaniel</span></div>
-  <nav class="links">
-    <a href="#projects">projects</a>
-    <a href="#lab">try them</a>
-    <a href="#pipeline">experience</a>
-    <a href="#contact">contact</a>
-    <button class="kbd-hint" id="palBtn">⌘K</button>
-  </nav>
+<!-- ── top bar ──────────────────────────────────────────── -->
+<header class="bar" id="bar">
+  <div class="bar-inner">
+    <a class="brand" href="#top" aria-label="Linus Dominic Nathaniel, back to top">
+      <span class="brand-mark" aria-hidden="true">LDN</span>
+      <span class="brand-name">Linus Dominic Nathaniel</span>
+    </a>
+    <nav class="sections" aria-label="Sections">
+      <a href="#projects" data-spy="projects"><i>01</i>Work</a>
+      <a href="#lab" data-spy="lab"><i>02</i>Try it live</a>
+      <a href="#experience" data-spy="experience"><i>03</i>Experience</a>
+      <a href="#skills" data-spy="skills"><i>04</i>Toolkit</a>
+      <a href="#contact" data-spy="contact"><i>05</i>Contact</a>
+    </nav>
+    <div class="bar-tools">
+      <button class="icon-btn" id="themeBtn" type="button" aria-label="Switch to dark theme">
+        <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M19.5 14.6A7.8 7.8 0 0 1 9.4 4.5a7.8 7.8 0 1 0 10.1 10.1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="kbd-btn" id="palBtn" type="button" aria-haspopup="dialog" aria-controls="palette">
+        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M15 15l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <span class="kbd-label">Jump to</span><kbd id="palKey">⌘K</kbd>
+      </button>
+    </div>
+  </div>
+  <div class="progress" aria-hidden="true"><i id="progress"></i></div>
 </header>
 
-<!-- ── hero: a name, one sentence, and proof ─────────────── -->
-<div class="hero">
- <div class="wrap hero-grid">
-  <div class="hero-copy">
-    <div class="eyebrow">Lead Data Engineer · AI Engineering</div>
-    <h1 class="name">Linus Dominic<br />Nathaniel</h1>
-    <p class="tagline" id="tagline"></p>
-    <div class="cta-row">
-      <a class="btn primary" href="#lab">❯ Test my projects</a>
-      <a class="btn" id="cvBtn" href="linus-nathaniel-resume.pdf" download>⤓ Download CV</a>
-    </div>
-    <p class="hero-links">
-      <a href="https://github.com/linusdominic" target="_blank" rel="noopener">GitHub</a>
-      <a href="https://www.linkedin.com/in/linus-dominic/" target="_blank" rel="noopener">LinkedIn</a>
-      <a href="#contact">Contact</a>
-    </p>
-  </div>
-  <div class="hero-proof" id="heroProof" aria-label="Three results, each from a project below"></div>
- </div>
-</div>
+<main id="main" tabindex="-1">
 
-<!-- ── projects ─────────────────────────────────────────── -->
-<section id="projects"><div class="wrap">
-  <div class="sec-head reveal">
-    <span class="tag">open source</span>
-    <h2>Projects</h2>
+<!-- ── hero: who, what, and three results ───────────────── -->
+<section class="hero" id="top" aria-labelledby="heroName">
+  <div class="wrap">
+    <p class="hero-eyebrow rise"><span class="pulse" aria-hidden="true"></span><span id="heroRole"></span></p>
+    <h1 class="hero-name rise" id="heroName">Linus Dominic <em>Nathaniel</em></h1>
+    <div class="hero-grid">
+      <div class="hero-copy rise">
+        <p class="tagline" id="tagline"></p>
+        <p class="hero-now" id="heroNow"></p>
+        <div class="cta-row">
+          <a class="btn primary" href="#lab">Try the projects live <span aria-hidden="true">→</span></a>
+          <a class="btn" id="cvBtn" href="linus-nathaniel-resume.pdf" download>Download CV <span class="btn-meta">PDF</span></a>
+        </div>
+        <button class="try-line" id="tryLine" type="button">
+          <span class="try-prompt" aria-hidden="true">❯</span>
+          <code id="tryCmd"></code>
+          <span class="try-go">run it live <span aria-hidden="true">↵</span></span>
+        </button>
+        <p class="hero-links">
+          <a href="https://github.com/linusdominic" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
+          <a href="https://www.linkedin.com/in/linus-dominic/" target="_blank" rel="noopener">LinkedIn <span aria-hidden="true">↗</span></a>
+          <a href="#contact">Contact</a>
+        </p>
+      </div>
+      <div class="readout rise" aria-labelledby="readoutTitle">
+        <div class="readout-head">
+          <h2 id="readoutTitle">Three headline results</h2>
+          <span>each from a run, caveat attached</span>
+        </div>
+        <div class="readout-rows" id="heroProof"></div>
+      </div>
+    </div>
   </div>
-  <p class="sec-sub reveal">Each one runs from a clone. Every number comes from a run on my machine, and each README lists what was not verified. The charts are drawn from the results files in the repositories.</p>
-  <div id="projectList"></div>
-</div></section>
+</section>
+
+<!-- ── projects: overview grid, then four cases ─────────── -->
+<section id="projects" class="sec" aria-labelledby="projectsTitle">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="sec-num">01 · Open source</p>
+      <h2 id="projectsTitle">Thirteen projects, <em>measured</em></h2>
+      <p class="sec-sub">Each one runs from a clone. Every number comes from a run on my machine, and each README lists what was not verified. The charts are drawn from the results files in the repositories.</p>
+    </header>
+    <div class="legend-line" aria-label="How to read the badges">
+      <span><span class="lab-kind live">live</span> runs its real Python in your browser</span>
+      <span><span class="lab-kind rec">recorded</span> replays real output from a run</span>
+      <span><span class="lab-kind none">repo only</span> needs a database or a model</span>
+      <span><i class="caveat-dot" aria-hidden="true"></i> what was not verified</span>
+    </div>
+    <div class="bento" id="projectGrid"></div>
+
+    <header class="sub-head">
+      <p class="sec-num">Case studies</p>
+      <h3>Four in depth</h3>
+    </header>
+    <div id="projectCases"></div>
+  </div>
+</section>
 
 <!-- ── shell ────────────────────────────────────────────── -->
-<section id="lab"><div class="wrap">
-  <div class="sec-head reveal">
-    <span class="tag">try it</span>
-    <h2>Test them yourself</h2>
-  </div>
-  <p class="sec-sub reveal">A shell over the projects. Two of them run their real code here, in your browser: type a sentence and see whether the calling agent would be allowed to say it, or paste a line with a phone number and watch it get masked. The parts that need a database, AWS or a model replay recorded runs, and every result says which it was.</p>
-  <div class="console reveal" id="query">
-    <div class="console-bar">
-      <i class="b" style="background:#ff5f57"></i><i class="b" style="background:#febc2e"></i><i class="b" style="background:#28c840"></i>
-      <span style="margin-left:8px">visitor@linus:~/projects · python in webassembly</span>
+<section id="lab" class="sec sec-lab" aria-labelledby="labTitle">
+  <div class="wrap lab-layout">
+    <header class="sec-head lab-intro">
+      <p class="sec-num">02 · Try it live</p>
+      <h2 id="labTitle">Test them <em>yourself</em></h2>
+      <p class="sec-sub">A shell over the projects. Two of them run their real code here, in your browser: type a sentence and see whether the calling agent would be allowed to say it, or paste a line with a phone number and watch it get masked. The parts that need a database, AWS or a model replay recorded runs, and every result says which it was.</p>
+    </header>
+    <div class="console" id="query">
+      <div class="console-bar">
+        <span class="console-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="console-title">visitor@linus:~/projects</span>
+        <span class="py-status" id="pyStatus" data-state="idle"><i aria-hidden="true"></i><span>python idle · loads on first live command</span></span>
+      </div>
+      <div class="console-out" id="cOut" role="log" aria-live="polite" aria-label="Shell output" tabindex="0"></div>
+      <label class="console-in"><span aria-hidden="true">❯</span><input id="cIn" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Shell command" placeholder='callagent guard "You will get about 6.25% today."' /><kbd aria-hidden="true">↵</kbd></label>
     </div>
-    <div class="console-out" id="cOut" aria-live="polite"></div>
-    <div class="console-in"><span>❯</span><input id="cIn" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Shell command" placeholder='callagent guard "You will get about 6.25% today."' /></div>
+    <div class="console-hints" id="cHints" aria-label="Commands to try"></div>
   </div>
-  <div class="console-hints" id="cHints"></div>
-</div></section>
+</section>
 
-<!-- ── experience: the timeline first, the graph after ───── -->
-<section id="pipeline"><div class="wrap">
-  <div class="sec-head reveal">
-    <span class="tag">experience</span>
-    <h2>Where I have worked</h2>
-  </div>
-  <p class="sec-sub reveal"><b class="lead-line">I get systems that each think they own the customer to agree on one version of them.</b> <span id="summary"></span></p>
-  <div class="timeline" id="expList"></div>
-
-  <h3 class="lab-group">The same history as a graph</h3>
-  <p class="sec-sub reveal">Roles and the systems I built in them, wired by what led to what. Click a node for the detail.</p>
-  <div class="dag-wrap reveal">
-    <canvas id="dag"></canvas>
-    <div class="dag-hud" id="legend"></div>
-    <div class="dag-tools">
-      <button id="btnRelayout">⟲ relayout</button>
-      <button id="btnFlow">◉ flow</button>
+<!-- ── experience: the timeline, then the graph ─────────── -->
+<section id="experience" class="sec" aria-labelledby="expTitle">
+  <div class="wrap">
+    <div class="exp-grid">
+      <header class="sec-head exp-intro">
+        <p class="sec-num">03 · Experience</p>
+        <h2 id="expTitle">Where I have <em>worked</em></h2>
+        <p class="pull">I get systems that each think they own the customer to agree on one version of them.</p>
+        <p class="sec-sub" id="summary"></p>
+      </header>
+      <ol class="timeline" id="expList" aria-label="Roles, most recent first"></ol>
     </div>
-    <div class="dag-note">drag nodes · click to inspect</div>
+
+    <div class="graph" id="graph">
+      <div class="graph-head">
+        <div>
+          <h3>The same history as a graph</h3>
+          <p>Roles and the systems I built in them, wired by what led to what. Select a node for the detail.</p>
+        </div>
+        <div class="graph-tools">
+          <div class="graph-legend" id="legend"></div>
+          <button type="button" id="btnFlow" aria-pressed="true">Flow on</button>
+          <button type="button" id="btnRelayout">Relayout</button>
+        </div>
+      </div>
+      <div class="dag-wrap">
+        <canvas id="dag" tabindex="0" role="application" aria-roledescription="graph" aria-describedby="dagHelp"></canvas>
+        <p class="dag-note" id="dagHelp">Drag nodes or the canvas. Click a node, or focus the graph and use the arrow keys and Enter.</p>
+        <p class="sr-only" id="dagLive" aria-live="polite"></p>
+      </div>
+      <div class="graph-systems">
+        <span class="graph-systems-label">Systems</span>
+        <div id="sysList"></div>
+      </div>
+    </div>
   </div>
-</div></section>
+</section>
 
 <!-- ── what I work with ─────────────────────────────────── -->
-<section id="skills"><div class="wrap">
-  <div class="sec-head reveal">
-    <span class="tag">tools</span>
-    <h2>What I work with</h2>
+<section id="skills" class="sec" aria-labelledby="skillsTitle">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="sec-num">04 · Toolkit</p>
+      <h2 id="skillsTitle">What I work <em>with</em></h2>
+    </header>
+    <dl class="skill-grid" id="skillGrid"></dl>
+    <div class="edu" id="edu"></div>
   </div>
-  <dl class="skill-lines reveal" id="skillGrid"></dl>
-</div></section>
+</section>
 
 <!-- ── contact ──────────────────────────────────────────── -->
-<section id="contact"><div class="wrap">
-  <div class="sec-head reveal">
-    <span class="tag">sink</span>
-    <h2>Get in touch</h2>
+<section id="contact" class="sec sec-contact" aria-labelledby="contactTitle">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="sec-num">05 · Contact</p>
+      <h2 id="contactTitle">Get in <em>touch</em></h2>
+      <p class="sec-sub status" id="statusLine"></p>
+    </header>
+    <a class="mail-big" id="mailBig" href="#"></a>
+    <div class="contact-grid" id="contactGrid"></div>
   </div>
-  <p class="sec-sub reveal" id="statusLine"></p>
-  <div class="contact-grid" id="contactGrid"></div>
-</div></section>
+</section>
 
-<footer>
+</main>
+
+<footer class="foot">
   <div class="wrap foot-inner">
     <span id="footL"></span>
+    <span class="foot-mid">Every number on this page comes from a run. What was not verified is listed beside it.</span>
     <span>built as a DAG · no trackers · <span id="footR"></span></span>
   </div>
 </footer>
 
 <!-- ── drawer ───────────────────────────────────────────── -->
-<aside id="drawer" aria-hidden="true">
+<div class="scrim" id="scrim" hidden></div>
+<aside id="drawer" role="dialog" aria-modal="true" aria-labelledby="dTitle" inert>
   <div class="drawer-top">
-    <button class="drawer-close" id="dClose" aria-label="Close">✕</button>
+    <button class="drawer-close icon-btn" id="dClose" type="button" aria-label="Close the detail panel">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
     <div class="d-kind" id="dKind"></div>
-    <div class="d-title" id="dTitle"></div>
+    <h2 class="d-title" id="dTitle"></h2>
     <div class="d-sub" id="dSub"></div>
     <div class="d-meta" id="dMeta"></div>
   </div>
@@ -150,13 +235,17 @@
 </aside>
 
 <!-- ── palette ──────────────────────────────────────────── -->
-<div id="palette">
+<div id="palette" role="dialog" aria-modal="true" aria-label="Jump to" hidden>
   <div class="pal-box">
-    <input id="palInput" placeholder="Jump to a role, project or section…" autocomplete="off" />
-    <div class="pal-list" id="palList"></div>
+    <div class="pal-search">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M15 15l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <input id="palInput" placeholder="Jump to a project, role or section…" autocomplete="off" role="combobox" aria-expanded="true" aria-controls="palList" aria-autocomplete="list" aria-label="Search the site" />
+      <kbd>esc</kbd>
+    </div>
+    <div class="pal-list" id="palList" role="listbox" aria-label="Results"></div>
   </div>
 </div>
 
-<script type="module" src="app.js"></script>
+<script type="module" src="app.js?v=20261120b"></script>
 </body>
 </html>

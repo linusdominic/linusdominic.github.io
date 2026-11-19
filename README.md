@@ -1,39 +1,85 @@
 # linusdominic.github.io
 
-Interactive portfolio for **Linus Dominic Nathaniel** — Lead Data Engineer / Data Architect.
+Interactive portfolio for **Linus Dominic Nathaniel**, Lead Data Engineer / Data Architect.
 
-One page, in this order: a name and one sentence with three results beside them; the
-projects, each with its headline result, its caveat, a screenshot and a chart drawn from
-its results; a shell where a visitor can try the projects; experience as a timeline, with
-the same history as a draggable graph below it; tools; contact. A zero-dependency static
-site: no framework, no build step, no trackers.
+One page, in this order: a name, one sentence and three headline results, each with its
+caveat; all thirteen projects in an overview grid, then four in depth (result, caveat,
+notes, commands, screenshot and a chart drawn from its results); a shell where a visitor
+can try the projects; experience as a timeline, with the same history as a draggable
+graph below it; tools and education; contact. A zero-dependency static site: no
+framework, no build step, no trackers.
+
+Design rationale and the research behind it are in [`DESIGN.md`](DESIGN.md).
+
+## Structure
+
+| File | What it holds |
+| --- | --- |
+| `index.html` | The page skeleton: landmarks, section headings, drawer, palette. |
+| `styles.css` | Design tokens for both themes, then every component. |
+| `data.js` | Profile, roles, systems, edges, skills, education, graph colours. |
+| `lab.js` | `PROJECTS` (the thirteen projects), the shell's project commands, and the hero results, overview grid and case studies. |
+| `charts.js` | Small bar and tick charts drawn from each project's results files. |
+| `app.js` | Theme, hero copy, career graph, drawer, timeline, toolkit, contact, the shell's résumé queries, palette, scroll progress and section highlighting. |
+| `lab/` | The Python bundle (`py.zip`), recorded runs and commit manifest. |
+| `tools/` | `build_lab.py`, `check_lab.py`, `labmain.py`. |
+| `assets/` | Screenshots, and `fonts/` with the OFL licences. |
 
 ## Stack
 
 - Vanilla ES modules, HTML5 Canvas (2D), CSS custom properties
-- All content lives in `data.js` — edit that file, nothing else
-- Three categorical node colours only (`TYPE_META`), validated all-pairs for
-  colour-vision deficiency against the dark surface. The current role is marked
-  by state (a mint ring plus motion), never by a fourth hue.
+- Fonts, self-hosted (about 52 KB, `font-display: swap`, metric-matched fallbacks): one
+  family throughout. Geist (variable weight) for headings, figures and text, Geist Mono for
+  code and labels. Both are under the SIL Open Font License; see `assets/fonts/OFL-*.txt`.
+- Pyodide from its CDN, loaded only when a live command is first used
 - Deployed to GitHub Pages from `main` / root
+
+## Theme
+
+Light ("paper") and dark ("graphite") are both designed. The first visit follows the
+system setting (`prefers-color-scheme`); the sun/moon button in the top bar switches and
+remembers the choice in `localStorage`. All colours are tokens at the top of
+`styles.css`, defined once per theme:
+
+- green (`--accent`) means verified or live, and amber (`--caveat-dot`) marks a caveat.
+  Nothing else uses either.
+- charts use cobalt for the result and stone for the comparison (`--chart-a`, `--chart-b`).
+- the shell is dark in both themes.
+- the career graph keeps the three validated category colours in `TYPE_META`; its
+  surfaces and text are read from the theme tokens and redrawn when the theme changes.
+
+Text contrast passes WCAG AA in both themes.
 
 ## Features
 
-- **Project lab** — a shell over thirteen open-source projects (`lab.js`). Commands marked
+- **Project lab**: a shell over thirteen open-source projects (`lab.js`). Commands marked
   *live* run the project's own Python, unmodified, in the visitor's browser (Pyodide,
-  loaded from a CDN the first time a live command is used). Commands marked *recorded*
-  replay real output for the parts that need a database, AWS or a model. Every result says
-  which it was and which commit the code came from. `/?run=callagent%20campaign` opens the
-  page and runs a command.
-- **Charts** — `charts.js` draws small bar charts from numbers copied out of each
-  project's results files. Values are printed beside every bar.
-- **Career graph** — below the timeline: draggable nodes, hover-to-highlight lineage.
-  Auto-switches to a vertical layout below 720px.
-- **Detail drawer** — click any node for the full run log.
-- **Résumé queries** — the same shell answers `whoami`, `select * from experience`,
-  `marketplace`, `lead`.
-- **Command palette** — `⌘K` / `Ctrl+K` to jump anywhere.
-- Respects `prefers-reduced-motion`.
+  loaded from a CDN the first time a live command is used); the shell's title bar shows
+  whether Python is idle, loading or ready. Commands marked *recorded* replay real output
+  for the parts that need a database, AWS or a model. Every result says which it was and
+  which commit the code came from. Example commands sit beside the shell, grouped into
+  live, recorded and résumé queries; Up and Down recall earlier commands.
+  `/?run=callagent%20campaign` opens the page and runs a command.
+- **Overview grid**: all thirteen projects in a 12-column grid, sized by importance. Each
+  tile shows its result, its caveat and a badge (live, recorded, repo only). The five
+  mid-sized tiles carry their chart and commands; the four featured ones link to their
+  case study.
+- **Charts**: `charts.js` draws small bar charts from numbers copied out of each project's
+  results files. Values are printed beside every bar.
+- **Career graph**: draggable nodes, hover to highlight lineage, a top-to-bottom layout on
+  narrow screens. It takes keyboard focus: arrow keys move between nodes and Enter opens
+  one. Every system is also listed as a button below it. It animates only while on
+  screen.
+- **Detail drawer**: select any role or system for the full run log.
+- **Résumé queries**: the same shell answers `whoami`, `select * from experience`,
+  `tables`, `marketplace`, `lead`, `infra`, `integrations`, `contact`.
+- **Command palette**: `⌘K` / `Ctrl+K` (or the search button) to jump to any section,
+  project, role or system, run a command, switch theme or download the CV.
+- **Navigation**: a sticky top bar with the five sections, the current one highlighted,
+  and a reading-progress line.
+- **Accessibility**: skip link, landmarks, visible focus, modal dialogs that keep and
+  return focus, alt text on every screenshot, `prefers-reduced-motion` respected
+  (no entrance motion, no graph animation).
 
 ## Local dev
 
@@ -44,7 +90,12 @@ python3 -m http.server 8000
 
 ## Deploy
 
-Push to `main`. GitHub Pages serves from `main` / root — **Settings → Pages → Source: Deploy from a branch**.
+Push to `main`. GitHub Pages serves from `main` / root: **Settings → Pages → Source: Deploy from a branch**.
+
+GitHub Pages lets browsers cache files for ten minutes, so the stylesheet and the scripts are
+loaded with a version query (`styles.css?v=20261120b`, and the same on `app.js` and its imports
+of `data.js`, `lab.js` and `charts.js`). Change that date in `index.html`, `app.js` and `lab.js`
+whenever one of those files changes, or returning visitors may get new HTML with old CSS.
 
 ## Rebuilding the lab
 
@@ -57,14 +108,16 @@ uv run --no-project --python 3.12 --with pyyaml python tools/check_lab.py
 
 `tools/labmain.py` is the only Python written for the site: it parses a command and calls
 the project's own modules. `tools/check_lab.py` runs every live command against the built
-bundle, and CI runs it on each push. To add a project, add it to `PROJECTS` in `lab.js`.
+bundle, and CI runs it on each push. To add a project, add it to `PROJECTS` in `lab.js`
+with a `tier`: `big` (overview tile plus a case study; needs `story`, `shot` and `chart`),
+`compact` (a tile with its chart) or `more` (a small tile).
 
 ## Editing content
 
-Everything is in `data.js`:
+Project content is in `PROJECTS` in `lab.js`. Everything else is in `data.js`:
 
-- `PROFILE` — name, contact, tagline, hero stats
-- `NODES` — roles and projects (`kind: "role" | "project"`, `layer` sets DAG column/row)
-- `EDGES` — `[fromId, toId]` pairs
-- `SKILLS`, `EDUCATION` — the lists
-- `TYPE_META` — node colours and legend labels
+- `PROFILE`: name, contact, tagline, status, summary
+- `NODES`: roles and systems (`kind: "role" | "project"`, `layer` sets the graph column)
+- `EDGES`: `[fromId, toId]` pairs
+- `SKILLS`, `EDUCATION`: the lists
+- `TYPE_META`: node colours and legend labels

@@ -1,69 +1,139 @@
-import { PROFILE, NODES, EDGES, SKILLS, EDUCATION, TYPE_META } from "./data.js";
-import { lab, renderProof, renderProjects, STARTERS } from "./lab.js";
+import { PROFILE, NODES, EDGES, SKILLS, EDUCATION, TYPE_META } from "./data.js?v=20261120b";
+import { lab, renderProof, renderProjects, STARTERS, PROJECTS } from "./lab.js?v=20261120b";
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
-const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const ACCENT = "#00e5a0";   // state / "now", never a category colour
+const MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
+const reduced = () => MOTION.matches;
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-/* ══════════════════ HERO ══════════════════ */
-$("#tagline").textContent = PROFILE.tagline;
+const byId = Object.fromEntries(NODES.map((n) => [n.id, n]));
+const roles = NODES.filter((n) => n.kind === "role");
+const projs = NODES.filter((n) => n.kind === "project");
+const current = NODES.find((n) => n.current);
+const DASHBOARD = "https://superset.altaircapitalgroup.com/embed/psr-v2";
+const HERO_TRY = 'callagent guard "You will get about 6.25% today."';
+
+/* ══════════════════ THEME ══════════════════ */
+// The head script has already set data-theme. A saved choice wins; otherwise follow the system.
+const root = document.documentElement;
+const themeBtn = $("#themeBtn");
+function paintThemeButton() {
+  const dark = root.dataset.theme === "dark";
+  themeBtn.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
+  themeBtn.title = dark ? "Light theme" : "Dark theme";
+}
+function setTheme(theme, save) {
+  const apply = () => {
+    root.dataset.theme = theme;
+    paintThemeButton();
+    graphColors();
+  };
+  if (save) { try { localStorage.setItem("theme", theme); } catch {} }
+  if (document.startViewTransition && !reduced()) document.startViewTransition(apply);
+  else apply();
+}
+themeBtn.onclick = () => setTheme(root.dataset.theme === "dark" ? "light" : "dark", true);
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+  let saved = null;
+  try { saved = localStorage.getItem("theme"); } catch {}
+  if (!saved) setTheme(e.matches ? "dark" : "light", false);
+});
+paintThemeButton();
+
+/* ══════════════════ HERO + COPY ══════════════════ */
+$("#heroRole").textContent = `${PROFILE.status} · ${PROFILE.location}`;
+$("#tagline").innerHTML = esc(PROFILE.tagline).replace("how each one was measured", "<em>how each one was measured</em>");
+$("#heroNow").innerHTML =
+  `<span class="now-tag">Now</span><span>${esc(current.sub)} at <b>${esc(current.label)}</b> <span class="now-place">${esc(current.place)}</span></span>`;
+$("#tryCmd").textContent = HERO_TRY;
 $("#summary").textContent = PROFILE.summary;
-$("#statusLine").textContent = PROFILE.status;
+$("#statusLine").textContent = `${PROFILE.status}. Based in ${PROFILE.location}.`;
 $("#footL").textContent = `© ${new Date().getFullYear()} ${PROFILE.name}`;
 $("#footR").textContent = `last_run ${new Date().toISOString().slice(0, 10)}`;
+const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+$("#palKey").textContent = isMac ? "⌘K" : "Ctrl K";
 
 /* ══════════════════ DAG ══════════════════ */
 const cv = $("#dag"), ctx = cv.getContext("2d");
 let NW = 168, NH = 52, LAYER_STEP = 250, SLOT_STEP = 168, VERT = false;
-let flowOn = true, hover = null, drag = null, moved = false;
+let flowOn = !reduced(), hover = null, focusNode = null, drag = null, moved = false, visible = false, running = false;
 let view = { s: 1, x: 0, y: 0 };
 const particles = [];
+const G = {};
 
+// Canvas colours come from the theme's tokens, read again whenever the theme changes.
+function graphColors() {
+  Object.assign(G, {
+    node: css("--g-node"), nodeOn: css("--g-node-on"), text: css("--ink"), sub: css("--ink-3"),
+    edge: css("--g-edge"), arrow: css("--g-arrow"), grid: css("--g-grid"), border: css("--g-border"),
+    accent: css("--accent"), focus: css("--focus"),
+    sans: css("--sans"), mono: css("--mono"),
+  });
+  if (!running) draw(true);
+}
+
+// Narrow screens get a top-to-bottom layout; a layer wider than the screen wraps onto
+// a second row, so nodes stay at full size instead of shrinking to fit.
+let PER = 99, ROWS = 0;
+const dagWrap = cv.parentElement;
+const byLayer = {};
+NODES.forEach((n) => (byLayer[n.layer] ??= []).push(n));
+const LAYERS = Object.keys(byLayer).map(Number).sort((a, b) => a - b);
 function setMode() {
-  VERT = cv.clientWidth < 720;
-  if (VERT) { NW = 138; NH = 44; LAYER_STEP = 108; SLOT_STEP = 150; }
-  else { NW = 182; NH = 54; LAYER_STEP = 258; SLOT_STEP = 152; }
+  const cw = cv.clientWidth;
+  VERT = cw < 720;
+  if (VERT) {
+    PER = cw < 560 ? 2 : 3;
+    NW = Math.max(120, Math.min(176, (cw - 48 - 14 * (PER - 1)) / PER));
+    NH = 46; SLOT_STEP = NW + 14; LAYER_STEP = NH + 34;
+    ROWS = LAYERS.reduce((r, L) => r + Math.ceil(byLayer[L].length / PER), 0);
+  } else { PER = 99; NW = 182; NH = 54; LAYER_STEP = 258; SLOT_STEP = 152; }
 }
 function layout() {
   setMode();
-  const byLayer = {};
-  NODES.forEach((n) => (byLayer[n.layer] ??= []).push(n));
-  Object.entries(byLayer).forEach(([L, arr]) => {
-    arr.forEach((n, i) => {
-      const along = +L * LAYER_STEP;
-      const across = (i - (arr.length - 1) / 2) * SLOT_STEP;
-      if (VERT) { n.y = along; n.x = across; }
-      else { n.x = along; n.y = across; }
-    });
+  let row = 0;
+  LAYERS.forEach((L) => {
+    const arr = byLayer[L];
+    for (let i = 0; i < arr.length; i += PER) {
+      const chunk = arr.slice(i, i + PER);
+      chunk.forEach((n, j) => {
+        const across = (j - (chunk.length - 1) / 2) * SLOT_STEP;
+        if (VERT) { n.x = across; n.y = row * LAYER_STEP; }
+        else { n.x = L * LAYER_STEP; n.y = across; }
+      });
+      row++;
+    }
   });
   fit();
 }
 function fit() {
-  const pad = VERT ? 30 : 70;
+  const pad = VERT ? 24 : 56;
   const xs = NODES.map((n) => n.x), ys = NODES.map((n) => n.y);
   const w = Math.max(...xs) - Math.min(...xs) + NW + pad * 2;
   const h = Math.max(...ys) - Math.min(...ys) + NH + pad * 2;
   const cw = cv.clientWidth, ch = cv.clientHeight;
-  view.s = Math.min(cw / w, ch / h, 1.3);
+  view.s = Math.min(cw / w, ch / h, VERT ? 1 : 1.3);
   const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
   const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
   view.x = cw / 2 - cx * view.s;
   view.y = ch / 2 - cy * view.s;
 }
-let wasVert = null;
+let lastMode = null;
 function resize() {
+  setMode();
+  // In the narrow layout the panel is as tall as the graph needs.
+  dagWrap.style.height = VERT ? `${ROWS * LAYER_STEP - (LAYER_STEP - NH) + 64}px` : "";
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   cv.width = cv.clientWidth * dpr;
   cv.height = cv.clientHeight * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const prev = VERT;
-  setMode();
-  if (prev !== VERT || wasVert === null) { wasVert = VERT; layout(); }
+  const mode = `${VERT}-${PER}-${Math.round(NW)}`;
+  if (mode !== lastMode) { lastMode = mode; layout(); }
   else fit();
+  if (!running) draw(true);
 }
-const byId = Object.fromEntries(NODES.map((n) => [n.id, n]));
 const w2s = (x, y) => [x * view.s + view.x, y * view.s + view.y];
 const s2w = (x, y) => [(x - view.x) / view.s, (y - view.y) / view.s];
 
@@ -84,15 +154,13 @@ function bez(p, t) {
     u * u * u * p.y1 + 3 * u * u * t * p.c1y + 3 * u * t * t * p.c2y + t * t * t * p.y2,
   ];
 }
-
 function spawn() {
-  if (!flowOn || REDUCED || particles.length > 90) return;
+  if (!flowOn || reduced() || particles.length > 90) return;
   const e = EDGES[(Math.random() * EDGES.length) | 0];
   const a = byId[e[0]], b = byId[e[1]];
   if (!a || !b) return;
   particles.push({ a, b, t: 0, sp: 0.0035 + Math.random() * 0.004, c: TYPE_META[b.type].color });
 }
-
 function roundRect(x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -102,25 +170,32 @@ function roundRect(x, y, w, h, r) {
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 }
+function clip(t, max, font) {
+  ctx.font = font;
+  if (ctx.measureText(t).width <= max) return t;
+  let s = t;
+  while (s.length > 3 && ctx.measureText(s + "…").width > max) s = s.slice(0, -1);
+  return s + "…";
+}
 
 let tick = 0;
-function draw() {
+// once = a single still frame (theme change, resize, reduced motion, off screen)
+function draw(once = false) {
+  if (!G.node) return;
   tick++;
   const cw = cv.clientWidth, ch = cv.clientHeight;
   ctx.clearRect(0, 0, cw, ch);
 
-  // faint grid
-  ctx.strokeStyle = "rgba(126,158,191,.045)";
+  ctx.strokeStyle = G.grid;
   ctx.lineWidth = 1;
   const g = 40 * view.s;
   for (let x = view.x % g; x < cw; x += g) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, ch); ctx.stroke(); }
   for (let y = view.y % g; y < ch; y += g) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(cw, y); ctx.stroke(); }
 
-  const hi = hover || drag?.n;
+  const hi = hover || drag?.n || focusNode;
   const linked = new Set();
   if (hi) EDGES.forEach(([s, t]) => { if (s === hi.id) linked.add(t); if (t === hi.id) linked.add(s); });
 
-  // edges
   EDGES.forEach(([s, t]) => {
     const a = byId[s], b = byId[t];
     const p = edgePath(a, b);
@@ -130,12 +205,9 @@ function draw() {
           [C2X, C2Y] = w2s(p.c2x, p.c2y), [X2, Y2] = w2s(p.x2, p.y2);
     ctx.moveTo(X1, Y1);
     ctx.bezierCurveTo(C1X, C1Y, C2X, C2Y, X2, Y2);
-    ctx.strokeStyle = on ? TYPE_META[b.type].color : "rgba(126,158,191,.18)";
-    ctx.lineWidth = on ? 1.8 : 1;
-    ctx.globalAlpha = on ? 0.9 : 1;
+    ctx.strokeStyle = on ? TYPE_META[b.type].color : G.edge;
+    ctx.lineWidth = on ? 1.8 : 1.1;
     ctx.stroke();
-    ctx.globalAlpha = 1;
-    // arrow
     const [ax, ay] = bez(p, 0.97), [bx2, by2] = bez(p, 1);
     const ang = Math.atan2(by2 - ay, bx2 - ax);
     const [AX, AY] = w2s(bx2, by2);
@@ -144,28 +216,25 @@ function draw() {
     ctx.lineTo(AX - 7 * Math.cos(ang - 0.4), AY - 7 * Math.sin(ang - 0.4));
     ctx.lineTo(AX - 7 * Math.cos(ang + 0.4), AY - 7 * Math.sin(ang + 0.4));
     ctx.closePath();
-    ctx.fillStyle = on ? TYPE_META[b.type].color : "rgba(126,158,191,.3)";
+    ctx.fillStyle = on ? TYPE_META[b.type].color : G.arrow;
     ctx.fill();
   });
 
-  // particles
-  if (tick % 7 === 0) spawn();
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const pt = particles[i];
-    pt.t += pt.sp;
-    if (pt.t >= 1) { particles.splice(i, 1); continue; }
-    const p = edgePath(pt.a, pt.b);
-    const [wx, wy] = bez(p, pt.t);
-    const [sx, sy] = w2s(wx, wy);
-    const fade = Math.sin(pt.t * Math.PI);
-    ctx.globalAlpha = 0.15 + fade * 0.85;
-    ctx.fillStyle = pt.c;
-    ctx.shadowBlur = 10; ctx.shadowColor = pt.c;
-    ctx.beginPath(); ctx.arc(sx, sy, 2.4, 0, 7); ctx.fill();
-    ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+  if (!once) {
+    if (tick % 7 === 0) spawn();
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const pt = particles[i];
+      pt.t += pt.sp;
+      if (pt.t >= 1) { particles.splice(i, 1); continue; }
+      const [wx, wy] = bez(edgePath(pt.a, pt.b), pt.t);
+      const [sx, sy] = w2s(wx, wy);
+      ctx.globalAlpha = 0.15 + Math.sin(pt.t * Math.PI) * 0.85;
+      ctx.fillStyle = pt.c;
+      ctx.beginPath(); ctx.arc(sx, sy, 2.4, 0, 7); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
   }
 
-  // nodes
   NODES.forEach((n) => {
     const meta = TYPE_META[n.type];
     const [sx, sy] = w2s(n.x, n.y);
@@ -173,61 +242,64 @@ function draw() {
     const x = sx - w / 2, y = sy - h / 2;
     const active = hi === n;
     const dim = hi && hi !== n && !linked.has(n.id);
+    ctx.globalAlpha = dim ? 0.32 : 1;
 
-    ctx.globalAlpha = dim ? 0.3 : 1;
-
-    if (n.current || active) {
-      const pulse = 0.5 + 0.5 * Math.sin(tick / 24);
-      ctx.shadowBlur = (active ? 26 : 12) + pulse * 10;
-      ctx.shadowColor = n.current ? ACCENT : meta.color;
-    }
-    roundRect(x, y, w, h, 9 * view.s);
-    ctx.fillStyle = active ? "rgba(16,24,34,.98)" : "rgba(10,15,22,.94)";
+    roundRect(x, y, w, h, 8 * view.s);
+    ctx.fillStyle = active ? G.nodeOn : G.node;
     ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = n.current ? ACCENT : active ? meta.color : "rgba(126,158,191,.26)";
-    ctx.lineWidth = active ? 1.9 : 1.1;
+    ctx.strokeStyle = n.current ? G.accent : active ? meta.color : G.border;
+    ctx.lineWidth = active || n.current ? 1.8 : 1;
     ctx.stroke();
 
-    // left accent
     ctx.save();
-    roundRect(x, y, w, h, 9 * view.s); ctx.clip();
+    roundRect(x, y, w, h, 8 * view.s); ctx.clip();
     ctx.fillStyle = meta.color;
-    ctx.fillRect(x, y, 3 * view.s, h);
+    ctx.fillRect(x, y, 3.5 * view.s, h);
     ctx.restore();
 
-    const fs = Math.max(9, 12.5 * view.s);
-    ctx.fillStyle = active ? "#fff" : "#dbe6f0";
-    ctx.font = `600 ${fs}px "Inter", sans-serif`;
+    const fs = Math.max(10, 12.5 * view.s);
+    ctx.fillStyle = G.text;
     ctx.textBaseline = "middle";
     const lbl = (VERT && n.short) ? n.short : n.label;
-    ctx.fillText(clip(lbl, w - 22 * view.s, `600 ${fs}px Inter`), x + 12 * view.s, sy - 7 * view.s);
-
-    ctx.fillStyle = "#6f8296";
-    const fs2 = Math.max(8, 9.5 * view.s);
-    ctx.font = `500 ${fs2}px "JetBrains Mono", monospace`;
-    ctx.fillText(clip(n.sub, w - 22 * view.s, `500 ${fs2}px monospace`), x + 12 * view.s, sy + 9 * view.s);
+    const f1 = `600 ${fs}px ${G.sans}`;
+    ctx.fillText(clip(lbl, w - 24 * view.s, f1), x + 13 * view.s, sy - 7 * view.s);
+    const fs2 = Math.max(9, 9.5 * view.s);
+    const f2 = `500 ${fs2}px ${G.mono}`;
+    ctx.fillStyle = G.sub;
+    ctx.fillText(clip(n.sub, w - 24 * view.s, f2), x + 13 * view.s, sy + 9 * view.s);
 
     if (n.current) {
       const r = 3 * view.s, cx = x + w - 11 * view.s, cy = y + 10 * view.s;
-      ctx.fillStyle = ACCENT;
+      ctx.fillStyle = G.accent;
       ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
-      ctx.globalAlpha = (dim ? 0.3 : 1) * (0.35 + 0.35 * Math.sin(tick / 22));
-      ctx.beginPath(); ctx.arc(cx, cy, r + 3.5 * view.s, 0, 7); ctx.fill();
-      ctx.globalAlpha = dim ? 0.3 : 1;
+      if (!once && !reduced()) {
+        ctx.globalAlpha = (dim ? 0.32 : 1) * (0.3 + 0.3 * Math.sin(tick / 22));
+        ctx.beginPath(); ctx.arc(cx, cy, r + 3.5 * view.s, 0, 7); ctx.fill();
+      }
     }
     ctx.globalAlpha = 1;
-  });
 
-  requestAnimationFrame(draw);
+    // keyboard focus: a ring outside the node, drawn in the focus colour
+    if (focusNode === n && document.activeElement === cv) {
+      roundRect(x - 4, y - 4, w + 8, h + 8, 11 * view.s);
+      ctx.strokeStyle = G.focus;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  });
 }
-function clip(t, max, font) {
-  ctx.font = font;
-  if (ctx.measureText(t).width <= max) return t;
-  let s = t;
-  while (s.length > 3 && ctx.measureText(s + "…").width > max) s = s.slice(0, -1);
-  return s + "…";
+function loop() {
+  if (!visible || reduced()) { running = false; draw(true); return; }
+  running = true;
+  draw();
+  requestAnimationFrame(loop);
 }
+// Animate only while the graph is on screen.
+new IntersectionObserver(([e]) => {
+  visible = e.isIntersecting;
+  if (visible && !running) loop();
+}).observe(cv);
+MOTION.addEventListener("change", () => { flowOn = !reduced(); paintFlow(); if (visible && !running) loop(); });
 
 function hit(mx, my) {
   const [wx, wy] = s2w(mx, my);
@@ -237,11 +309,10 @@ function hit(mx, my) {
 }
 function pos(e) {
   const r = cv.getBoundingClientRect();
-  const p = e.touches?.[0] ?? e;
-  return [p.clientX - r.left, p.clientY - r.top];
+  return [e.clientX - r.left, e.clientY - r.top];
 }
-
 const CLICK_SLOP = 5; // px of travel still counted as a click, not a drag
+const redraw = () => { if (!running) draw(true); };
 
 cv.addEventListener("pointerdown", (e) => {
   const [mx, my] = pos(e);
@@ -265,92 +336,171 @@ cv.addEventListener("pointermove", (e) => {
     hover = n;
     cv.style.cursor = n ? "pointer" : "grab";
   }
+  redraw();
 });
 cv.addEventListener("pointerup", (e) => {
   const [mx, my] = pos(e);
-  if (drag && !drag.pan && !moved) openDrawer(drag.n);
-  else if (drag?.pan && !moved) { const n = hit(mx, my); if (n) openDrawer(n); }
+  if (drag && !drag.pan && !moved) openDrawer(drag.n, cv);
+  else if (drag?.pan && !moved) { const n = hit(mx, my); if (n) openDrawer(n, cv); }
   drag = null;
   cv.classList.remove("dragging");
+  redraw();
 });
-cv.addEventListener("pointerleave", () => { hover = null; });
+cv.addEventListener("pointerleave", () => { hover = null; redraw(); });
 
-$("#btnRelayout").onclick = () => { layout(); };
-$("#btnFlow").onclick = (e) => {
+// Keyboard: arrows move between nodes in reading order of the layout, Enter opens one.
+function nearest(from, dx, dy) {
+  let best = null, score = Infinity;
+  NODES.forEach((n) => {
+    if (n === from) return;
+    const vx = n.x - from.x, vy = n.y - from.y;
+    const along = vx * dx + vy * dy;
+    if (along <= 0) return;
+    const off = Math.abs(vx * dy - vy * dx);
+    const s = along + off * 2.2;
+    if (s < score) { score = s; best = n; }
+  });
+  return best;
+}
+function focusOn(n) {
+  focusNode = n;
+  $("#dagLive").textContent = `${n.label}, ${n.sub}. ${n.kind}. Press Enter for the detail.`;
+  redraw();
+}
+cv.addEventListener("focus", () => focusOn(focusNode || current));
+cv.addEventListener("blur", () => { focusNode = null; redraw(); });
+cv.addEventListener("keydown", (e) => {
+  const dir = { ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowUp: [0, -1] }[e.key];
+  if (dir) {
+    e.preventDefault();
+    const next = nearest(focusNode || current, ...dir);
+    if (next) focusOn(next);
+  } else if ((e.key === "Enter" || e.key === " ") && focusNode) {
+    e.preventDefault();
+    openDrawer(focusNode, cv);
+  } else if (e.key === "Home") { e.preventDefault(); focusOn(NODES[0]); }
+  else if (e.key === "End") { e.preventDefault(); focusOn(NODES[NODES.length - 1]); }
+});
+cv.setAttribute("aria-label", `Career graph: ${roles.length} roles and ${projs.length} systems, connected by what led to what.`);
+
+$("#btnRelayout").onclick = () => { layout(); redraw(); };
+function paintFlow() {
+  const b = $("#btnFlow");
+  b.setAttribute("aria-pressed", String(flowOn));
+  b.textContent = flowOn ? "Flow on" : "Flow off";
+  b.disabled = reduced();
+}
+$("#btnFlow").onclick = () => {
   flowOn = !flowOn;
-  e.target.textContent = flowOn ? "◉ flow" : "○ flow";
   if (!flowOn) particles.length = 0;
+  paintFlow();
 };
+paintFlow();
 window.addEventListener("resize", resize);
 
-// legend
 $("#legend").innerHTML =
-  Object.entries(TYPE_META)
-    .map(([k, v]) => `<span class="chip"><i style="background:${v.color}"></i>${v.name}</span>`)
+  Object.values(TYPE_META)
+    .map((v) => `<span class="chip"><i style="background:${v.color}"></i>${v.name.toLowerCase()}</span>`)
     .join("") +
-  `<span class="chip state"><i></i>CURRENT</span>`;
+  `<span class="chip state"><i></i>current</span>`;
 
-layout(); resize(); draw();
+$("#sysList").innerHTML = projs.map((n) =>
+  `<button type="button" data-id="${n.id}"><i style="background:${TYPE_META[n.type].color}" aria-hidden="true"></i>${esc(n.label)}</button>`).join("");
+$$("#sysList button").forEach((b) => (b.onclick = () => openDrawer(byId[b.dataset.id], b)));
+
+layout();
+resize();
+graphColors();
 
 /* ══════════════════ DRAWER ══════════════════ */
-function openDrawer(n) {
+const drawer = $("#drawer"), scrim = $("#scrim");
+let drawerReturn = null;
+function openDrawer(n, from) {
   const meta = TYPE_META[n.type];
+  const colour = n.current ? "var(--accent)" : meta.color;
   $("#dKind").innerHTML =
-    `<i style="background:${n.current ? ACCENT : meta.color}"></i>` +
-    `<span style="color:${n.current ? ACCENT : meta.color}">${n.current ? "CURRENT ROLE" : meta.name}</span>` +
-    `<span style="color:var(--ink-4)">· ${n.kind}</span>`;
+    `<i style="background:${colour}"></i><span>${n.current ? "current role" : meta.name.toLowerCase()}</span><span class="d-kind-sub">· ${n.kind}</span>`;
   $("#dTitle").textContent = n.label;
   $("#dSub").textContent = n.sub;
-  $("#dMeta").innerHTML = [n.period, n.place].filter(Boolean).map((x) => `<span>${x}</span>`).join("");
+  $("#dMeta").innerHTML = [n.period, n.place].filter(Boolean).map((x) => `<span>${esc(x)}</span>`).join("");
   $("#dBody").innerHTML = n.body.map((b) => `<li>${b}</li>`).join("");
-  $("#dTags").innerHTML = (n.tags || []).map((t) => `<span>${t}</span>`).join("");
+  $("#dTags").innerHTML = (n.tags || []).map((t) => `<span>${esc(t)}</span>`).join("");
   $("#dLink").innerHTML = n.link
     ? `<a class="btn" href="${n.link}" target="_blank" rel="noopener">${n.linkLabel || "Open ↗"}</a>` : "";
-  $("#drawer").classList.add("open");
-  $("#drawer").setAttribute("aria-hidden", "false");
+  drawerReturn = from || document.activeElement;
+  scrim.hidden = false;
+  drawer.inert = false;
+  drawer.classList.add("open");
+  requestAnimationFrame(() => scrim.classList.add("open"));
+  document.body.classList.add("locked");
+  $("#dClose").focus({ preventScroll: true });
 }
 function closeDrawer() {
-  $("#drawer").classList.remove("open");
-  $("#drawer").setAttribute("aria-hidden", "true");
+  if (!drawer.classList.contains("open")) return;
+  drawer.classList.remove("open");
+  scrim.classList.remove("open");
+  drawer.inert = true;
+  document.body.classList.remove("locked");
+  setTimeout(() => { scrim.hidden = true; }, 300);
+  drawerReturn?.focus?.({ preventScroll: true });
 }
 $("#dClose").onclick = closeDrawer;
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeDrawer(); closePal(); } });
+scrim.onclick = closeDrawer;
+// Keep Tab inside an open dialog.
+function trap(e, box) {
+  if (e.key !== "Tab") return;
+  const f = [...box.querySelectorAll("a[href], button:not([disabled]), input, [tabindex='0']")].filter((el) => el.offsetParent !== null);
+  if (!f.length) return;
+  const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+}
+drawer.addEventListener("keydown", (e) => trap(e, drawer));
 
 /* ══════════════════ LISTS ══════════════════ */
-$("#expList").innerHTML = NODES.filter((n) => n.kind === "role")
-  .slice().reverse()
-  .map((n) => `<div class="tl-item${n.current ? " now" : ""}" data-id="${n.id}" tabindex="0" role="button">
-      <h3>${n.label}${n.badge ? `<span class="badge">${n.badge}</span>` : ""}</h3>
-      <span class="per">${n.period}</span>
-      <div class="sb">${n.sub} · ${n.place}</div>
-    </div>`).join("");
-$$(".tl-item").forEach((c) => {
-  const go = () => openDrawer(byId[c.dataset.id]);
-  c.onclick = go;
-  c.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } };
-});
+$("#expList").innerHTML = roles.slice().reverse().map((n) => `
+  <li class="tl-item${n.current ? " now" : ""}">
+    <button type="button" data-id="${n.id}">
+      <span class="tl-per">${esc(n.period)}</span>
+      <span class="tl-main">
+        <span class="tl-org">${esc(n.label)}${n.current ? `<span class="tl-now">now</span>` : ""}</span>
+        <span class="tl-role">${esc(n.sub)}</span>
+        <span class="tl-place">${esc(n.place)}</span>
+      </span>
+      ${n.badge ? `<span class="badge">${esc(n.badge)}</span>` : ""}
+      <span class="tl-go" aria-hidden="true">→</span>
+    </button>
+  </li>`).join("");
+$$(".tl-item button").forEach((b) => (b.onclick = () => openDrawer(byId[b.dataset.id], b)));
 
 $("#skillGrid").innerHTML = SKILLS.map((s) => `
-  <div class="skill-line"><dt>${s.group}</dt><dd>${s.items.join(" · ")}</dd></div>`).join("");
+  <div class="skill"><dt>${esc(s.group)}<span>${s.items.length}</span></dt><dd>${s.items.map((i) => `<span>${esc(i)}</span>`).join(" ")}</dd></div>`).join("");
 
+$("#edu").innerHTML = `
+  <div><h3>Education</h3><p><b>${esc(EDUCATION.degree)}</b></p><p>${esc(EDUCATION.school)}</p><p class="mono">${esc(EDUCATION.period)}</p></div>
+  <div><h3>Certifications</h3><ul>${EDUCATION.certs.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div>
+  <div><h3>Languages</h3><ul>${EDUCATION.languages.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div>`;
+
+$("#mailBig").href = `mailto:${PROFILE.email}`;
+$("#mailBig").innerHTML = `${esc(PROFILE.email)} <span aria-hidden="true">↗</span>`;
 $("#contactGrid").innerHTML = [
-  ["email", PROFILE.email, `mailto:${PROFILE.email}`],
   ["phone", PROFILE.phone, `tel:${PROFILE.phone.replace(/\s/g, "")}`],
   ["linkedin", "in/linus-dominic", PROFILE.linkedin],
   ["github", "@linusdominic", PROFILE.github],
-  ["live dashboard", "superset.altaircapitalgroup.com", "https://superset.altaircapitalgroup.com/embed/psr-v2"],
+  ["live dashboard", "superset.altaircapitalgroup.com", DASHBOARD],
+  ["cv", "linus-nathaniel-resume.pdf", "linus-nathaniel-resume.pdf"],
   ["location", PROFILE.location, ""],
-].map(([l, v, h]) =>
-  h ? `<a class="contact-card" href="${h}" target="_blank" rel="noopener"><div class="l">${l}</div><div class="v">${v}</div></a>`
-    : `<div class="contact-card"><div class="l">${l}</div><div class="v">${v}</div></div>`
-).join("");
+].map(([l, v, h]) => {
+  if (!h) return `<div class="contact-card"><span class="l">${l}</span><span class="v">${esc(v)}</span></div>`;
+  const ext = /^https?:/.test(h);
+  const attrs = l === "cv" ? "download" : ext ? `target="_blank" rel="noopener"` : "";
+  return `<a class="contact-card" href="${h}" ${attrs}><span class="l">${l}</span><span class="v">${esc(v)}</span><span class="go" aria-hidden="true">${l === "cv" ? "↓" : ext ? "↗" : "→"}</span></a>`;
+}).join("");
 
 /* ══════════════════ CONSOLE ══════════════════ */
 const out = $("#cOut"), inp = $("#cIn");
-const roles = NODES.filter((n) => n.kind === "role");
-const projs = NODES.filter((n) => n.kind === "project");
 
-function w(html, cls = "") { out.innerHTML += `<div class="${cls}">${html}</div>`; out.scrollTop = out.scrollHeight; }
+function w(html, cls = "") { out.insertAdjacentHTML("beforeend", `<div class="${cls}">${html}</div>`); out.scrollTop = out.scrollHeight; }
 function table(rows, cols) {
   const widths = cols.map((c, i) => Math.max(c.length, ...rows.map((r) => String(r[i]).length)));
   const line = (ch) => "+" + widths.map((n) => ch.repeat(n + 2)).join("+") + "+";
@@ -482,13 +632,13 @@ const SELECTS = {
 function run(raw) {
   const cmd = raw.trim();
   if (!cmd) return;
-  w(`<span class="q">❯ ${escapeHtml(cmd)}</span>`);
+  w(`<span class="q">❯ ${esc(cmd)}</span>`);
   const low = cmd.toLowerCase().replace(/;$/, "");
   if (CMDS[low]) return CMDS[low]();
   if (lab.handles(cmd)) return lab.run(cmd, (html) => w(html));
   const m = low.match(/from\s+(\w+)/);
   if (low.startsWith("select") && m && SELECTS[m[1]]) {
-    let res = SELECTS[m[1]]();
+    const res = SELECTS[m[1]]();
     if (/lead\s*=\s*true|where.*lead/.test(low)) return CMDS.lead();
     if (/marketplace/.test(low)) return CMDS.marketplace();
     return w(res);
@@ -498,67 +648,157 @@ function run(raw) {
   if (/integration|cotality|corelogic|valuelink|zoho|twilio|telnyx|square|vendor/.test(low)) return CMDS.integrations();
   if (/\blead|team|manage/.test(low)) return CMDS.lead();
   if (low === "ls" || low === "dir") return CMDS.tables();
-  w(`<span class="e">error: unknown command "${escapeHtml(cmd)}". try <b>help</b></span>`);
+  w(`<span class="e">error: unknown command "${esc(cmd)}". try <b>help</b></span>`);
 }
-const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { run(inp.value); inp.value = ""; } });
-$("#cHints").innerHTML = [...STARTERS, "whoami", "select * from experience", "help", "clear"]
-  .map((h) => `<button data-c="${escapeHtml(h)}">${escapeHtml(h)}</button>`).join("");
-$$("#cHints button").forEach((b) => (b.onclick = () => { run(b.dataset.c); inp.focus(); }));
+// Up and down recall earlier commands, like a real shell.
+const history = [];
+let hIdx = 0;
+inp.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    if (inp.value.trim()) history.push(inp.value);
+    hIdx = history.length;
+    run(inp.value);
+    inp.value = "";
+  } else if (e.key === "ArrowUp" && history.length) {
+    e.preventDefault();
+    hIdx = Math.max(0, hIdx - 1);
+    inp.value = history[hIdx];
+  } else if (e.key === "ArrowDown" && history.length) {
+    e.preventDefault();
+    hIdx = Math.min(history.length, hIdx + 1);
+    inp.value = history[hIdx] ?? "";
+  }
+});
+
+// Hint buttons, grouped by what they do.
+const liveProgs = new Set(PROJECTS.filter((p) => p.kind === "live").map((p) => p.prog));
+const HINTS = [
+  { title: "Live in your browser", tag: "live", items: STARTERS.filter((c) => liveProgs.has(c.split(" ")[0])) },
+  { title: "Recorded runs", tag: "rec", items: [...STARTERS.filter((c) => c !== "lab" && !liveProgs.has(c.split(" ")[0])), "webhooks demo", "platform selftest"] },
+  { title: "Start here", tag: "", items: ["lab", "help"] },
+  { title: "Query the résumé", tag: "", items: ["whoami", "select * from experience", "tables", "clear"] },
+];
+$("#cHints").innerHTML = HINTS.map((g) => `
+  <div class="hint-group">
+    <p class="hint-title">${g.tag === "live" ? '<span class="lab-kind live">live</span>' : g.tag === "rec" ? '<span class="lab-kind rec">recorded</span>' : ""}${g.title}</p>
+    <div class="hint-list">${g.items.map((h) => `<button type="button" data-c="${esc(h)}"><code>${esc(h)}</code></button>`).join("")}</div>
+  </div>`).join("");
+$$("#cHints button").forEach((b) => (b.onclick = () => { run(b.dataset.c); inp.focus({ preventScroll: true }); }));
+
 w(`<span class="k">lab</span> ready · 13 projects. Two run their real code here, in your browser. Others replay recorded runs.
 <span class="k">career.db</span> connected · 5 roles, ${projs.length} projects, ${SKILLS.length} skill groups indexed.
-type <span class="v">lab</span> or click a command below. <span class="v">help</span> lists everything.`);
+type <span class="v">lab</span> or click a command. <span class="v">help</span> lists everything.`);
+
+document.addEventListener("lab:python", (e) => {
+  const s = $("#pyStatus");
+  s.dataset.state = e.detail.state;
+  s.querySelector("span").textContent = e.detail.text;
+});
+
 const runInShell = (c) => {
-  $("#query").scrollIntoView({ block: "center", behavior: REDUCED ? "auto" : "smooth" });
+  $("#query").scrollIntoView({ block: "center", behavior: reduced() ? "auto" : "smooth" });
   run(c);
 };
+$("#tryLine").onclick = () => runInShell(HERO_TRY);
 renderProof($("#heroProof"));
-renderProjects($("#projectList"), runInShell);
+renderProjects($("#projectGrid"), $("#projectCases"), runInShell);
 // A link can carry a command: /?run=callagent%20campaign opens the shell and runs it.
 const linked = new URLSearchParams(location.search).get("run");
 if (linked) setTimeout(() => { $("#query").scrollIntoView({ block: "center" }); run(linked.slice(0, 200)); }, 700);
 
 /* ══════════════════ PALETTE ══════════════════ */
+const jump = (h) => document.querySelector(h).scrollIntoView({ behavior: reduced() ? "auto" : "smooth" });
 const PAL = [
-  ...NODES.map((n) => ({ t: n.label, s: n.kind, go: () => openDrawer(n) })),
-  { t: "Experience", s: "section", go: () => jump("#pipeline") },
-  { t: "What I work with", s: "section", go: () => jump("#skills") },
-  { t: "Projects", s: "section", go: () => jump("#projects") },
-  { t: "Shell: try the projects", s: "section", go: () => jump("#lab") },
+  { t: "Work: thirteen projects", s: "section", go: () => jump("#projects") },
+  { t: "Try it live: the shell", s: "section", go: () => jump("#lab") },
+  { t: "Experience", s: "section", go: () => jump("#experience") },
+  { t: "Toolkit", s: "section", go: () => jump("#skills") },
   { t: "Contact", s: "section", go: () => jump("#contact") },
+  ...PROJECTS.map((p) => ({ t: p.repo, s: "project", go: () => jump(`#p-${p.repo}`) })),
+  ...NODES.map((n) => ({ t: n.label, s: n.kind, go: () => openDrawer(n) })),
+  { t: `Run: ${HERO_TRY}`, s: "command", go: () => runInShell(HERO_TRY) },
+  { t: "Run: lab", s: "command", go: () => runInShell("lab") },
+  { t: "Switch theme", s: "action", go: () => themeBtn.click() },
   { t: "Download CV", s: "action", go: () => $("#cvBtn").click() },
-  { t: "LinkedIn", s: "link", go: () => open(PROFILE.linkedin, "_blank") },
-  { t: "GitHub", s: "link", go: () => open(PROFILE.github, "_blank") },
-  { t: "Live Superset dashboard", s: "link", go: () => open("https://superset.altaircapitalgroup.com/embed/psr-v2", "_blank") },
+  { t: "LinkedIn", s: "link", go: () => open(PROFILE.linkedin, "_blank", "noopener") },
+  { t: "GitHub", s: "link", go: () => open(PROFILE.github, "_blank", "noopener") },
+  { t: "Live Superset dashboard", s: "link", go: () => open(DASHBOARD, "_blank", "noopener") },
 ];
-const jump = (h) => document.querySelector(h).scrollIntoView({ behavior: "smooth" });
-let palSel = 0, palRes = PAL;
-function renderPal(q = "") {
-  palRes = PAL.filter((p) => (p.t + p.s).toLowerCase().includes(q.toLowerCase()));
-  palSel = 0;
-  $("#palList").innerHTML = palRes.length
-    ? palRes.map((p, i) => `<div class="pal-item ${i === 0 ? "sel" : ""}" data-i="${i}"><span class="t">${p.t}</span><span class="s">${p.s}</span></div>`).join("")
-    : `<div class="pal-empty">no matching nodes</div>`;
-  $$("#palList .pal-item").forEach((el) => (el.onclick = () => { palRes[+el.dataset.i].go(); closePal(); }));
+const pal = $("#palette"), palInput = $("#palInput"), palList = $("#palList");
+let palSel = 0, palRes = PAL, palReturn = null;
+function paintSel() {
+  $$("#palList .pal-item").forEach((el, i) => {
+    el.classList.toggle("sel", i === palSel);
+    el.setAttribute("aria-selected", String(i === palSel));
+  });
+  const el = $$("#palList .pal-item")[palSel];
+  if (el) { palInput.setAttribute("aria-activedescendant", el.id); el.scrollIntoView({ block: "nearest" }); }
+  else palInput.removeAttribute("aria-activedescendant");
 }
-function openPal() { $("#palette").classList.add("open"); $("#palInput").value = ""; renderPal(); $("#palInput").focus(); }
-function closePal() { $("#palette").classList.remove("open"); }
+function renderPal(q = "") {
+  const ql = q.toLowerCase();
+  palRes = PAL.filter((p) => (p.t + " " + p.s).toLowerCase().includes(ql));
+  palSel = 0;
+  palList.innerHTML = palRes.length
+    ? palRes.map((p, i) => `<div class="pal-item" id="pal-${i}" role="option" data-i="${i}"><span class="t">${esc(p.t)}</span><span class="s">${p.s}</span></div>`).join("")
+    : `<div class="pal-empty">no matching nodes</div>`;
+  $$("#palList .pal-item").forEach((el) => (el.onclick = () => choose(+el.dataset.i)));
+  paintSel();
+}
+function choose(i) { const p = palRes[i]; closePal(); p?.go(); }
+function openPal() {
+  palReturn = document.activeElement;
+  pal.hidden = false;
+  palInput.value = "";
+  renderPal();
+  palInput.focus();
+  document.body.classList.add("locked");
+}
+function closePal(restore = true) {
+  if (pal.hidden) return;
+  pal.hidden = true;
+  document.body.classList.remove("locked");
+  if (restore) palReturn?.focus?.({ preventScroll: true });
+}
 $("#palBtn").onclick = openPal;
-$("#palette").onclick = (e) => { if (e.target.id === "palette") closePal(); };
-$("#palInput").addEventListener("input", (e) => renderPal(e.target.value));
-$("#palInput").addEventListener("keydown", (e) => {
-  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+pal.onclick = (e) => { if (e.target === pal) closePal(); };
+palInput.addEventListener("input", (e) => renderPal(e.target.value));
+palInput.addEventListener("keydown", (e) => {
+  if ((e.key === "ArrowDown" || e.key === "ArrowUp") && palRes.length) {
     e.preventDefault();
     palSel = (palSel + (e.key === "ArrowDown" ? 1 : -1) + palRes.length) % palRes.length;
-    $$("#palList .pal-item").forEach((el, i) => el.classList.toggle("sel", i === palSel));
-    $$("#palList .pal-item")[palSel]?.scrollIntoView({ block: "nearest" });
-  } else if (e.key === "Enter") { palRes[palSel]?.go(); closePal(); }
+    paintSel();
+  } else if (e.key === "Enter") { e.preventDefault(); choose(palSel); }
+  else if (e.key === "Tab") e.preventDefault();
 });
 document.addEventListener("keydown", (e) => {
-  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); openPal(); }
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); pal.hidden ? openPal() : closePal(); }
+  else if (e.key === "Escape") { closePal(); closeDrawer(); }
 });
 
-/* ══════════════════ REVEAL ══════════════════ */
-const io = new IntersectionObserver((es) => es.forEach((en) => en.isIntersecting && en.target.classList.add("in")), { threshold: 0.12 });
+/* ══════════════════ SCROLL: progress, section spy, reveal ══════════════════ */
+const bar = $("#progress");
+const spyLinks = $$(".sections a");
+const spied = spyLinks.map((a) => document.getElementById(a.dataset.spy));
+let ticking = false;
+function onScroll() {
+  ticking = false;
+  const max = document.documentElement.scrollHeight - innerHeight;
+  bar.style.transform = `scaleX(${max > 0 ? Math.min(1, scrollY / max) : 0})`;
+  const line = innerHeight * 0.35;
+  let on = -1;
+  spied.forEach((s, i) => { if (s.getBoundingClientRect().top <= line) on = i; });
+  spyLinks.forEach((a, i) => {
+    if (i === on) a.setAttribute("aria-current", "true");
+    else a.removeAttribute("aria-current");
+  });
+  $("#bar").classList.toggle("scrolled", scrollY > 8);
+}
+addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+onScroll();
+
+const io = new IntersectionObserver((es) => es.forEach((en) => {
+  if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
+}), { threshold: 0.08, rootMargin: "0px 0px -6% 0px" });
 $$(".reveal").forEach((el) => io.observe(el));
