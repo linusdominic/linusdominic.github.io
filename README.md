@@ -96,8 +96,8 @@ Text contrast passes WCAG AA in both themes.
 ## Local dev
 
 ```bash
-python3 -m http.server 8000
-# → http://localhost:8000
+python3 -m http.server 8090
+# → http://localhost:8090
 ```
 
 ## Deploy
