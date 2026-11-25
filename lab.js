@@ -10,7 +10,7 @@
 //  House style: no em-dashes, no bold inside body copy.
 // ─────────────────────────────────────────────────────────────
 
-import { chart, tooltips } from "./charts.js?v=20261120c";
+import { chart, tooltips } from "./charts.js?v=20261126a";
 
 const PYODIDE = "https://cdn.jsdelivr.net/pyodide/v0.29.5/full/";
 const GITHUB = "https://github.com/linusdominic/";
@@ -156,6 +156,23 @@ export const PROJECTS = [
     tries: ["open pipeline-triage-bench"],
   },
   {
+    repo: "de-trap-drills", prog: "drills", kind: "site", tier: "compact",
+    site: "https://linusdominic.github.io/de-trap-drills/",
+    what: "SQL and Python drills where the obvious answer fails, checked in your browser against a reference answer.",
+    metric: "26 drills", label: "the obvious answer fails in each one, and tests prove it",
+    caveat: "Checked in Chrome only. Timings from one machine.",
+    chart: {
+      type: "single", title: "Time to count one day out of 100", note: "100 million rows of Parquet, DuckDB, median of 5 runs", max: 417,
+      rows: [
+        { label: "Text formatting on the column", value: 417, text: "417 ms" },
+        { label: "date_trunc on the column", value: 13, text: "13 ms" },
+        { label: "Half-open range", value: 12, text: "12 ms" },
+        { label: "Partition column", value: 2.5, text: "2.5 ms", strong: true },
+      ],
+    },
+    tries: ["open de-trap-drills"],
+  },
+  {
     repo: "mortgage-metrics-platform", prog: "metrics", kind: "none", tier: "more",
     what: "Batch platform on public mortgage data, with metrics defined once for both people and AI agents.",
     metric: "One definition", label: "per metric, for people and for AI agents over MCP",
@@ -227,6 +244,7 @@ const KIND = {
   live: '<span class="lab-kind live">live</span>',
   recorded: '<span class="lab-kind rec">recorded</span>',
   none: '<span class="lab-kind none">repo only</span>',
+  site: '<span class="lab-kind site">own site</span>',
 };
 
 // Colour the words that carry a verdict, at the start of a line only.
@@ -293,11 +311,12 @@ const project = (name) => PROJECTS.find((p) => p.repo === name || p.prog === nam
 
 function listing() {
   const rows = PROJECTS.map((p) => `  <span class="v">${p.prog.padEnd(11)}</span>${KIND[p.kind]}  ${esc(p.metric.padEnd(17))} ${esc(p.repo)}`);
-  return `<span class="k">Thirteen projects.</span> Type a program name to see what it can do here.
+  return `<span class="k">Fourteen projects.</span> Type a program name to see what it can do here.
 ${rows.join("\n")}
 
   <span class="lab-kind live">live</span>      the project's own Python, unmodified, running in your browser
   <span class="lab-kind rec">recorded</span>  real output from a run on my machine, replayed
+  <span class="lab-kind site">own site</span>  runs in your browser on its own page: <span class="v">open &lt;name&gt;</span> for the link
   <span class="lab-kind none">repo only</span> needs a database or a model: <span class="v">open &lt;name&gt;</span> for the result and the link`;
 }
 
@@ -306,7 +325,8 @@ function describe(p) {
 ${esc(p.what)}
 result:  <span class="v">${esc(p.metric)}</span>  ${esc(p.label)}
 caveat:  ${esc(p.caveat)}
-code:    <a href="${GITHUB}${p.repo}" target="_blank" rel="noopener">github.com/linusdominic/${esc(p.repo)}</a>
+code:    <a href="${GITHUB}${p.repo}" target="_blank" rel="noopener">github.com/linusdominic/${esc(p.repo)}</a>${p.site ? `
+site:    <a href="${p.site}" target="_blank" rel="noopener">${esc(p.site.replace("https://", ""))}</a>` : ""}
 try:     ${p.tries.map((t) => `<span class="v">${esc(t)}</span>`).join("   ")}`;
 }
 
@@ -363,6 +383,7 @@ const HANDLERS = {
   triage: (args, say) => say(describe(project("triage"))),
   hmda: (args, say) => say(describe(project("hmda"))),
   nosql: (args, say) => say(describe(project("nosql"))),
+  drills: (args, say) => say(describe(project("drills"))),
 };
 
 async function live(line, prog, say) {
@@ -433,7 +454,7 @@ export function renderProof(target) {
   }).join("");
 }
 
-// Order on the page: the four featured, the five with a chart, then the four others.
+// Order on the page: the four featured, the six with a chart, then the four others.
 const ORDER = [...tier("big"), ...tier("compact"), ...tier("more")];
 const index = (p) => `P-${pad(ORDER.indexOf(p) + 1)}`;
 const top = (p) => `<div class="tile-top"><span class="tile-idx">${index(p)}</span>${KIND[p.kind]}</div>`;
@@ -462,6 +483,7 @@ const compactTile = (p) => `
     ${caveat(p)}
     ${chart(p.chart)}
     ${tries(p)}
+    ${p.site ? `<a class="tile-site" href="${p.site}" target="_blank" rel="noopener">Open the live site <span aria-hidden="true">↗</span></a>` : ""}
   </article>`;
 
 const smallTile = (p) => `
@@ -478,15 +500,17 @@ const liveTile = () => {
   const cmds = ['callagent guard "You will get about 6.25% today."', 'callqa mask "My social is 512-44-7166, call me on 555-0142"'];
   return `
   <aside class="tile tile-cta reveal scan hud" aria-label="Try a project live">
-    <p class="tile-idx">Try it live</p>
-    <p class="cta-title">Two of these run their real Python in your browser.</p>
+    <div class="cta-a">
+      <p class="tile-idx">Try it live</p>
+      <p class="cta-title">Two of these run their real Python in your browser.</p>
+      <p class="cta-sub">Others replay recorded runs, and every result says which it was.</p>
+      <a class="cta-link" href="#lab">Open the shell <span aria-hidden="true">↓</span></a>
+    </div>
     <ul class="cta-progs">
       <li><code>callagent</code><span>the calling agent's rules</span></li>
       <li><code>callqa</code><span>the call grader's masking and scoring</span></li>
     </ul>
-    <p class="cta-sub">The rest replay recorded runs, and every result says which it was.</p>
     <div class="cta-cmds">${cmds.map((c) => `<button type="button" class="cta-cmd" data-c="${esc(c)}"><span aria-hidden="true">❯</span><code>${esc(c)}</code></button>`).join("")}</div>
-    <a class="cta-link" href="#lab">Open the shell <span aria-hidden="true">↓</span></a>
   </aside>`;
 };
 
