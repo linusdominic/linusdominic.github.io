@@ -107,7 +107,7 @@ python3 -m http.server 8090
 Push to `main`. GitHub Pages serves from `main` / root: **Settings → Pages → Source: Deploy from a branch**.
 
 GitHub Pages lets browsers cache files for ten minutes, so the stylesheet and the scripts are
-loaded with a version query (`styles.css?v=20261126a`, and the same on `app.js` and its imports
+loaded with a version query (`styles.css?v=20261127a`, and the same on `app.js` and its imports
 of `data.js`, `lab.js`, `motion.js` and `charts.js`, and on the icon sprite). Change that date in
 `index.html`, `app.js` and `lab.js` whenever one of those files changes, or returning visitors may
 get new HTML with old CSS.

@@ -1,6 +1,6 @@
-import { PROFILE, NODES, EDGES, SKILLS, MARKS, CORE_STACK, EDUCATION, TYPE_META } from "./data.js?v=20261126a";
-import { lab, renderProof, renderProjects, STARTERS, PROJECTS } from "./lab.js?v=20261126a";
-import { decode, countUp, onEnter, boot, pauseOffscreen } from "./motion.js?v=20261126a";
+import { PROFILE, NODES, EDGES, SKILLS, MARKS, CORE_STACK, EDUCATION, TYPE_META } from "./data.js?v=20261127a";
+import { lab, renderProof, renderProjects, STARTERS, PROJECTS } from "./lab.js?v=20261127a";
+import { decode, countUp, onEnter, boot, pauseOffscreen } from "./motion.js?v=20261127a";
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -497,7 +497,7 @@ $("#skillGrid").innerHTML = SKILLS.map((s, i) => `
     : `<li class="tag">${esc(it)}</li>`).join("")}</ul></dd></div>`).join("");
 // One sprite holding only the marks used, fetched once and inlined so <use> follows
 // currentColor. If it does not load, every name is still there.
-fetch("assets/icons/simple-icons.svg?v=20261126a")
+fetch("assets/icons/simple-icons.svg?v=20261127a")
   .then((r) => (r.ok ? r.text() : ""))
   .then((svg) => {
     if (!svg) return;

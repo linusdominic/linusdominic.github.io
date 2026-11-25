@@ -10,7 +10,7 @@
 //  House style: no em-dashes, no bold inside body copy.
 // ─────────────────────────────────────────────────────────────
 
-import { chart, tooltips } from "./charts.js?v=20261126a";
+import { chart, tooltips } from "./charts.js?v=20261127a";
 
 const PYODIDE = "https://cdn.jsdelivr.net/pyodide/v0.29.5/full/";
 const GITHUB = "https://github.com/linusdominic/";
@@ -158,9 +158,9 @@ export const PROJECTS = [
   {
     repo: "de-trap-drills", prog: "drills", kind: "site", tier: "compact",
     site: "https://linusdominic.github.io/de-trap-drills/",
-    what: "SQL and Python drills where the obvious answer fails, checked in your browser against a reference answer.",
-    metric: "26 drills", label: "the obvious answer fails in each one, and tests prove it",
-    caveat: "Checked in Chrome only. Timings from one machine.",
+    what: "Interview prep for data engineers: drills in SQL, Python, Spark and Airflow where the obvious answer fails.",
+    metric: "40 drills", label: "on 9 learning paths, with 47 concept pages",
+    caveat: "Checked in Chrome only. Spark and Airflow answers recorded on one version each.",
     chart: {
       type: "single", title: "Time to count one day out of 100", note: "100 million rows of Parquet, DuckDB, median of 5 runs", max: 417,
       rows: [
