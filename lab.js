@@ -10,7 +10,7 @@
 //  House style: no em-dashes, no bold inside body copy.
 // ─────────────────────────────────────────────────────────────
 
-import { chart, tooltips } from "./charts.js?v=20261127a";
+import { chart, tooltips } from "./charts.js?v=20261128a";
 
 const PYODIDE = "https://cdn.jsdelivr.net/pyodide/v0.29.5/full/";
 const GITHUB = "https://github.com/linusdominic/";
