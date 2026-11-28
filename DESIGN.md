@@ -69,8 +69,8 @@ design makes that claim structural instead of decorative.
   in the hero are the only texture.
 - **The shell stays a terminal.** It is dark in both themes, sits beside grouped example
   commands (live, recorded, résumé), and shows whether Python is idle, loading or ready.
-- **Overview, then depth.** A 12-column bento shows all fourteen projects: the four
-  featured ones large with a screenshot, the six with charts medium, the four others
+- **Overview, then depth.** A 12-column bento shows all seventeen projects: the four
+  featured ones large with a screenshot, the nine with charts medium, the four others
   small, plus one full-width strip that invites you to run something. Four case studies follow, each
   with result, caveat, notes, commands, screenshot and chart.
 

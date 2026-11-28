@@ -1,6 +1,6 @@
-import { PROFILE, NODES, EDGES, SKILLS, MARKS, CORE_STACK, EDUCATION, TYPE_META } from "./data.js?v=20261128a";
-import { lab, renderProof, renderProjects, STARTERS, PROJECTS } from "./lab.js?v=20261128a";
-import { decode, countUp, onEnter, boot, pauseOffscreen } from "./motion.js?v=20261128a";
+import { PROFILE, NODES, EDGES, SKILLS, MARKS, CORE_STACK, EDUCATION, TYPE_META } from "./data.js?v=20261128b";
+import { lab, renderProof, renderProjects, STARTERS, PROJECTS } from "./lab.js?v=20261128b";
+import { decode, countUp, onEnter, boot, pauseOffscreen } from "./motion.js?v=20261128b";
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -497,7 +497,7 @@ $("#skillGrid").innerHTML = SKILLS.map((s, i) => `
     : `<li class="tag">${esc(it)}</li>`).join("")}</ul></dd></div>`).join("");
 // One sprite holding only the marks used, fetched once and inlined so <use> follows
 // currentColor. If it does not load, every name is still there.
-fetch("assets/icons/simple-icons.svg?v=20261128a")
+fetch("assets/icons/simple-icons.svg?v=20261128b")
   .then((r) => (r.ok ? r.text() : ""))
   .then((svg) => {
     if (!svg) return;
@@ -542,7 +542,7 @@ function table(rows, cols) {
 
 const CMDS = {
   help: () => w(`<span class="k">Try the projects:</span>
-  <span class="v">lab</span>               the fourteen projects and what runs here
+  <span class="v">lab</span>               the seventeen projects and what runs here
   <span class="v">callagent</span>         the calling agent's rules, live in your browser
   <span class="v">callqa</span>            the call grader's masking and scoring, live
   <span class="v">askwh</span>             recorded answers from the warehouse assistant
@@ -719,7 +719,7 @@ $("#cHints").innerHTML = HINTS.map((g) => `
 $$("#cHints button").forEach((b) => (b.onclick = () => { run(b.dataset.c); inp.focus({ preventScroll: true }); }));
 
 // One line per span, so the boot can type them in one after another.
-w(`<span class="bl"><span class="k">lab</span> ready · 14 projects. Two run their real code here, in your browser. Others replay recorded runs.</span>`
+w(`<span class="bl"><span class="k">lab</span> ready · 17 projects. Two run their real code here, in your browser. Others replay recorded runs.</span>`
   + `<span class="bl"><span class="k">career.db</span> connected · 5 roles, ${projs.length} projects, ${SKILLS.length} skill groups indexed.</span>`
   + `<span class="bl">type <span class="v">lab</span> or click a command. <span class="v">help</span> lists everything.</span>`, "boot");
 boot(out.firstElementChild);
@@ -744,7 +744,7 @@ if (linked) setTimeout(() => { $("#query").scrollIntoView({ block: "center" }); 
 /* ══════════════════ PALETTE ══════════════════ */
 const jump = (h) => document.querySelector(h).scrollIntoView({ behavior: reduced() ? "auto" : "smooth" });
 const PAL = [
-  { t: "Work: fourteen projects", s: "section", go: () => jump("#projects") },
+  { t: "Work: seventeen projects", s: "section", go: () => jump("#projects") },
   { t: "Try it live: the shell", s: "section", go: () => jump("#lab") },
   { t: "Experience", s: "section", go: () => jump("#experience") },
   { t: "Toolkit", s: "section", go: () => jump("#skills") },

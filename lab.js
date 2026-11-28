@@ -10,7 +10,7 @@
 //  House style: no em-dashes, no bold inside body copy.
 // ─────────────────────────────────────────────────────────────
 
-import { chart, tooltips } from "./charts.js?v=20261128a";
+import { chart, tooltips } from "./charts.js?v=20261128b";
 
 const PYODIDE = "https://cdn.jsdelivr.net/pyodide/v0.29.5/full/";
 const GITHUB = "https://github.com/linusdominic/";
@@ -85,6 +85,52 @@ export const PROJECTS = [
       ],
     },
     tries: ["askwh questions", "askwh ask 1"],
+  },
+  {
+    repo: "agentcore-loan-servicing-agent", prog: "agentcore", kind: "none", tier: "compact",
+    what: "A loan-servicing agent designed for Amazon Bedrock AgentCore. Cedar policy at the tool gateway decides what each caller may do, not the prompt.",
+    metric: "60 / 60", label: "gate cases pass; policy denied 21 of 85 tool calls",
+    caveat: "Local AWS emulator and a scripted model. Not deployed to AWS.",
+    chart: {
+      type: "single", title: "What the layers around the model did", note: "one evaluation run: 73 invocations, 85 attempted tool calls", max: 58,
+      rows: [
+        { label: "Tool calls allowed by policy", value: 58, text: "58" },
+        { label: "Tool calls denied by policy", value: 21, text: "21", strong: true },
+        { label: "Requests with no valid identity, rejected", value: 8, text: "8" },
+        { label: "Personal identifiers masked", value: 6, text: "6" },
+        { label: "Blocked by the guardrail", value: 3, text: "3" },
+      ],
+    },
+    tries: ["open agentcore-loan-servicing-agent"],
+  },
+  {
+    repo: "ask-the-lake", prog: "asklake", kind: "none", tier: "compact",
+    what: "Plain-English questions over an S3 data lake through Athena, with row and column rules enforced by rewriting the SQL outside the model.",
+    metric: "0 rows leaked", label: "by 82 attack queries; 19 of 30 leak with no guard",
+    caveat: "Local AWS emulator: Athena runs on DuckDB. Scripted model.",
+    chart: {
+      type: "single", title: "Attack queries that returned data they should not", note: "30 read-only cross-region and borrower-identifier statements", max: 30,
+      rows: [
+        { label: "Sent straight to Athena", value: 19, text: "19 / 30" },
+        { label: "Through the governed query path", value: 0, text: "0 / 30", strong: true },
+      ],
+    },
+    tries: ["open ask-the-lake"],
+  },
+  {
+    repo: "connect-self-service-agent", prog: "connect", kind: "none", tier: "compact",
+    what: "A contact-centre self-service agent designed for Amazon Connect. Identity and payment rules live in the tools, and every contact lands in a lake.",
+    metric: "37 / 37", label: "scripted contacts pass; no data before identity check",
+    caveat: "Contact simulator on an AWS emulator. Not run in Amazon Connect.",
+    chart: {
+      type: "single", title: "How 37 scripted contacts ended", note: "a property of the scenario set, not a forecast for real traffic", max: 37,
+      rows: [
+        { label: "Resolved without a person", value: 25, text: "25", strong: true },
+        { label: "Handed to a person with a summary", value: 11, text: "11" },
+        { label: "Abandoned by the customer", value: 1, text: "1" },
+      ],
+    },
+    tries: ["open connect-self-service-agent"],
   },
   {
     repo: "vectorless-rag-benchmark", prog: "vrbench", kind: "none", tier: "compact",
@@ -311,7 +357,7 @@ const project = (name) => PROJECTS.find((p) => p.repo === name || p.prog === nam
 
 function listing() {
   const rows = PROJECTS.map((p) => `  <span class="v">${p.prog.padEnd(11)}</span>${KIND[p.kind]}  ${esc(p.metric.padEnd(17))} ${esc(p.repo)}`);
-  return `<span class="k">Fourteen projects.</span> Type a program name to see what it can do here.
+  return `<span class="k">Seventeen projects.</span> Type a program name to see what it can do here.
 ${rows.join("\n")}
 
   <span class="lab-kind live">live</span>      the project's own Python, unmodified, running in your browser
@@ -376,6 +422,9 @@ const HANDLERS = {
   webhooks: (args, say) => args[0] === "demo"
     ? replay("webhooks", "serverless-webhook-ingestion", "It needs an AWS emulator, so it is replayed.", say)
     : say(describe(project("webhooks"))),
+  agentcore: (args, say) => say(describe(project("agentcore"))),
+  asklake: (args, say) => say(describe(project("asklake"))),
+  connect: (args, say) => say(describe(project("connect"))),
   vrbench: (args, say) => say(describe(project("vrbench"))),
   "docs-agent": (args, say) => say(describe(project("docs-agent"))),
   cdc: (args, say) => say(describe(project("cdc"))),
@@ -454,7 +503,7 @@ export function renderProof(target) {
   }).join("");
 }
 
-// Order on the page: the four featured, the six with a chart, then the four others.
+// Order on the page: the four featured, the nine with a chart, then the four others.
 const ORDER = [...tier("big"), ...tier("compact"), ...tier("more")];
 const index = (p) => `P-${pad(ORDER.indexOf(p) + 1)}`;
 const top = (p) => `<div class="tile-top"><span class="tile-idx">${index(p)}</span>${KIND[p.kind]}</div>`;

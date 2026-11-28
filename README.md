@@ -3,7 +3,7 @@
 Interactive portfolio for **Linus Dominic Nathaniel**, Lead Data Engineer / Data Architect.
 
 One page, in this order: a name, one sentence and three headline results, each with its
-caveat; all fourteen projects in an overview grid, then four in depth (result, caveat,
+caveat; all seventeen projects in an overview grid, then four in depth (result, caveat,
 notes, commands, screenshot and a chart drawn from its results); a shell where a visitor
 can try the projects; experience as a timeline, with the same history as a draggable
 graph below it; tools and education; contact. A zero-dependency static site: no
@@ -18,7 +18,7 @@ Design rationale and the research behind it are in [`DESIGN.md`](DESIGN.md).
 | `index.html` | The page skeleton: landmarks, section headings, drawer, palette. |
 | `styles.css` | Design tokens for both themes, then every component. |
 | `data.js` | Profile, roles, systems, edges, skills and their marks, the core stack, education, graph colours. |
-| `lab.js` | `PROJECTS` (the fourteen projects), the shell's project commands, and the hero results, overview grid and case studies. |
+| `lab.js` | `PROJECTS` (the seventeen projects), the shell's project commands, and the hero results, overview grid and case studies. |
 | `charts.js` | Small bar and tick charts drawn from each project's results files. |
 | `app.js` | Theme, hero copy, career graph, drawer, timeline, toolkit, contact, the shell's résumé queries, palette, scroll progress and section highlighting. |
 | `motion.js` | The scripted part of the motion layer: text that decodes, figures that count up, the shell's boot. |
@@ -53,7 +53,7 @@ Text contrast passes WCAG AA in both themes.
 
 ## Features
 
-- **Project lab**: a shell over fourteen open-source projects (`lab.js`). Commands marked
+- **Project lab**: a shell over seventeen open-source projects (`lab.js`). Commands marked
   *live* run the project's own Python, unmodified, in the visitor's browser (Pyodide,
   loaded from a CDN the first time a live command is used); the shell's title bar shows
   whether Python is idle, loading or ready. Commands marked *recorded* replay real output
@@ -61,9 +61,9 @@ Text contrast passes WCAG AA in both themes.
   which commit the code came from. Example commands sit beside the shell, grouped into
   live, recorded and résumé queries; Up and Down recall earlier commands.
   `/?run=callagent%20campaign` opens the page and runs a command.
-- **Overview grid**: all fourteen projects in a 12-column grid, sized by importance. Each
+- **Overview grid**: all seventeen projects in a 12-column grid, sized by importance. Each
   tile shows its result, its caveat and a badge (live, recorded, own site, repo only). The
-  six mid-sized tiles carry their chart and commands; the four featured ones link to their
+  nine mid-sized tiles carry their chart and commands; the four featured ones link to their
   case study. A full-width strip between the mid-sized and the small tiles invites the
   visitor to run a command. A project with its own live site (`site` in `PROJECTS`) gets
   the "own site" badge and a link to it.
@@ -107,7 +107,7 @@ python3 -m http.server 8090
 Push to `main`. GitHub Pages serves from `main` / root: **Settings → Pages → Source: Deploy from a branch**.
 
 GitHub Pages lets browsers cache files for ten minutes, so the stylesheet and the scripts are
-loaded with a version query (`styles.css?v=20261128a`, and the same on `app.js` and its imports
+loaded with a version query (`styles.css?v=20261128b`, and the same on `app.js` and its imports
 of `data.js`, `lab.js`, `motion.js` and `charts.js`, and on the icon sprite). Change that date in
 `index.html`, `app.js` and `lab.js` whenever one of those files changes, or returning visitors may
 get new HTML with old CSS.
